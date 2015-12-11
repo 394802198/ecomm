@@ -54,11 +54,12 @@ public class ImportOrderFromMDD
 	@Transactional
 	public void importOrderFromMDD() throws Exception
 	{
+		System.out.println( "importOrderFromMDD() Called" );
 		List< Order > finalOrders = new ArrayList< Order >();
 
 		Map< String, Object > configMap = new HashMap< String, Object >();
 
-		List< Integer > status = new ArrayList< Integer >();
+		List< Long > status = new ArrayList< Long >();
 		status.add( OrderStatus.WAREHOUSE_TRANSIT );
 		status.add( OrderStatus.PENDING_PAYMENT );
 		configMap.put( "status", status );
@@ -70,7 +71,7 @@ public class ImportOrderFromMDD
 		/*
 		 * 获取指定仓库的订单
 		 */
-		for ( Integer state : status )
+		for ( Long state : status )
 		{
 			/*
 			 * 调用订单编号列表 API
@@ -186,10 +187,16 @@ public class ImportOrderFromMDD
 										objectProcess.setObjectType( 1 );
 										objectProcess.setProcess( process );
 
-										if ( orderInfo.getOrderStatus().equals( 1L ) )
+										/*
+										 * 仓库中转
+										 */
+										if ( state.equals( OrderStatus.WAREHOUSE_TRANSIT ) )
 										{
 											objectProcess.setStep( order.getShop().getDeployStep() );
 										}
+										/*
+										 * 待付款或其他
+										 */
 										else
 										{
 											objectProcess.setStep( order.getShop().getInitStep() );
