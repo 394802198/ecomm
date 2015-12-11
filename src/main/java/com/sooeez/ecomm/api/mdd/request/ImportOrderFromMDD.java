@@ -54,7 +54,6 @@ public class ImportOrderFromMDD
 	@Transactional
 	public void importOrderFromMDD() throws Exception
 	{
-		System.out.println( "importOrderFromMDD() Called" );
 		List< Order > finalOrders = new ArrayList< Order >();
 
 		Map< String, Object > configMap = new HashMap< String, Object >();
