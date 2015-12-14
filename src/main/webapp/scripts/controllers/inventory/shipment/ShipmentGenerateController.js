@@ -583,8 +583,6 @@ angular.module('ecommApp')
             });
         }
 
-        executeShipmentOperationReview( 'VERIFY' );
-
         $scope.operateDate = Date.now();
         $scope.operationReview = orderService.getOperationReview;
 
