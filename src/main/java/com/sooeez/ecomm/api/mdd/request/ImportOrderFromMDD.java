@@ -237,6 +237,7 @@ public class ImportOrderFromMDD
 
 											objectProcess.setStep( finalStep );
 
+											order.setProcesses( new ArrayList<ObjectProcess>() );
 											order.getProcesses().add( objectProcess );
 										}
 									}
