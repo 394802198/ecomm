@@ -15,6 +15,5 @@ public class ECOMMResource implements Serializable {
 	public void setResourceUrl(String resourceUrl) {
 		this.resourceUrl = resourceUrl;
 	}	
-
 	
 }
