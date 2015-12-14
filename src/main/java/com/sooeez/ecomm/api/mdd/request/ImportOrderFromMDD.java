@@ -27,8 +27,10 @@ import com.sooeez.ecomm.domain.ObjectProcess;
 import com.sooeez.ecomm.domain.Order;
 import com.sooeez.ecomm.domain.OrderItem;
 import com.sooeez.ecomm.domain.Process;
+import com.sooeez.ecomm.domain.ProcessStep;
 import com.sooeez.ecomm.domain.Product;
 import com.sooeez.ecomm.domain.Shop;
+import com.sooeez.ecomm.repository.ObjectProcessRepository;
 import com.sooeez.ecomm.repository.OrderRepository;
 import com.sooeez.ecomm.service.ProcessService;
 import com.sooeez.ecomm.service.ShopService;
@@ -40,16 +42,18 @@ public class ImportOrderFromMDD
 	 * Repository
 	 */
 	@Autowired
-	private OrderRepository	orderRepository;
+	private OrderRepository			orderRepository;
 	/*
 	 * Service
 	 */
 	@Autowired
-	private ShopService		shopService;
+	private ShopService				shopService;
 	@Autowired
-	private ProcessService	processService;
+	private ProcessService			processService;
+	@Autowired
+	private ObjectProcessRepository	objectProcessRepository;
 	@PersistenceContext
-	private EntityManager	em;
+	private EntityManager			em;
 
 	@Transactional
 	public void importOrderFromMDD() throws Exception
@@ -102,31 +106,35 @@ public class ImportOrderFromMDD
 						 * 如果［没匹配到］或［外部订单日志时间］不一致，则该订单需要被插入或更新至数据库
 						 */
 						Boolean isNotExistedOrUpdated = false;
-						Long ecommOrderId = null;
+						Order finalOrder = null;
 						String sqlOrder = "SELECT * FROM t_order WHERE external_sn = ?1";
 						Query queryOrder = em.createNativeQuery( sqlOrder, Order.class );
 						queryOrder.setParameter( 1, externalSn );
 						/*
 						 * 如果存在该订单
 						 */
-						if ( queryOrder.getResultList().size() > 0 )
-						{
-							Order order = ( Order ) queryOrder.getSingleResult();
-							/*
-							 * 如果订单［外部日志时间］和接收到的［日志时间］不匹配，则该订单再外部系统有更新，
-							 * 同时更新该订单信息到我们的系统
-							 */
-							if ( order.getExternalLogTime() != null &&
-								externalLogTime != null && ! order.getExternalLogTime().equals( externalLogTime ) )
-							{
-								ecommOrderId = order.getId();
-								isNotExistedOrUpdated = true;
-							}
-						}
-						else
-						{
-							isNotExistedOrUpdated = true;
-						}
+						// if ( queryOrder.getResultList().size() > 0 )
+						// {
+						// Order order = ( Order ) queryOrder.getSingleResult();
+						// order.setId( null );
+						// /*
+						// * 如果订单［外部日志时间］和接收到的［日志时间］不匹配，则该订单再外部系统有更新，
+						// * 同时更新该订单信息到我们的系统
+						// */
+						// if ( order.getExternalLogTime() != null &&
+						// externalLogTime != null && !
+						// order.getExternalLogTime().equals( externalLogTime )
+						// )
+						// {
+						// finalOrder = order;
+						// isNotExistedOrUpdated = true;
+						// }
+						// }
+						// else
+						// {
+						// isNotExistedOrUpdated = true;
+						// }
+						isNotExistedOrUpdated = true;
 						if ( isNotExistedOrUpdated )
 						{
 							EcommHttp orderInfoHttp = new EcommHttp();
@@ -138,7 +146,7 @@ public class ImportOrderFromMDD
 							orderInfoHttp.getParamsMap().put( "pre", 0 );
 
 							OrderInfo orderInfo = new OrderInfo( orderInfoHttp.getJSONObject() );
-							orderInfo.setEcommOrderId( ecommOrderId );
+							orderInfo.setOrder( finalOrder );
 							orderInfo.setLogTime( externalLogTime );
 
 							orderInfos.add( orderInfo );
@@ -167,9 +175,12 @@ public class ImportOrderFromMDD
 							Boolean isAllItemSkuFoundInEcommProduct = true;
 							Boolean isDeliveryMethodCorrect = true;
 
-							Order order = new Order();
-							order.setShop( mddShop );
-							order.setId( orderInfo.getEcommOrderId() );
+							Order order = orderInfo.getOrder() != null ? orderInfo.getOrder() : new Order();
+							if ( orderInfo.getOrder() == null )
+							{
+								order.setShop( mddShop );
+								order.setId( orderInfo.getEcommOrderId() );
+							}
 
 							// 改订单为［待配货］或［配送中］
 							Process processQuery = new Process();
@@ -182,27 +193,52 @@ public class ImportOrderFromMDD
 								{
 									if ( process.getAutoApply() == true )
 									{
-										ObjectProcess objectProcess = new ObjectProcess();
-										objectProcess.setObjectType( 1 );
-										objectProcess.setProcess( process );
-
+										ProcessStep finalStep = null;
+										ProcessStep deployStep = order.getShop().getDeployStep();
+										ProcessStep initStep = order.getShop().getInitStep();
 										/*
 										 * 仓库中转
 										 */
 										if ( state.equals( OrderStatus.WAREHOUSE_TRANSIT ) )
 										{
-											objectProcess.setStep( order.getShop().getDeployStep() );
+											finalStep = order.getShop().getDeployStep();
 										}
 										/*
 										 * 待付款或其他
 										 */
 										else
 										{
-											objectProcess.setStep( order.getShop().getInitStep() );
+											finalStep = order.getShop().getInitStep();
 										}
 
-										order.setProcesses( new ArrayList< ObjectProcess >() );
-										order.getProcesses().add( objectProcess );
+										/*
+										 * 如果订单有流程，则不是新订单
+										 */
+										if ( order.getProcesses() != null && order.getProcesses().size() > 0 )
+										{
+											for ( ObjectProcess op : order.getProcesses() )
+											{
+												if ( op.getStep().getId().equals( deployStep.getId() ) &&
+													op.getStep().getId().equals( initStep.getId() ) )
+												{
+													this.objectProcessRepository.updateStepId( finalStep.getId(),
+														order.getId(), op.getStep().getId(), 1 );
+												}
+											}
+										}
+										/*
+										 * 否则订单没有流程，是新订单
+										 */
+										else
+										{
+											ObjectProcess objectProcess = new ObjectProcess();
+											objectProcess.setObjectType( 1 );
+											objectProcess.setProcess( process );
+
+											objectProcess.setStep( finalStep );
+
+											order.getProcesses().add( objectProcess );
+										}
 									}
 								}
 							}

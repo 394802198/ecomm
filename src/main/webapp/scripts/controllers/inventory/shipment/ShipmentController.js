@@ -404,23 +404,23 @@ angular.module('ecommApp')
 
         /** 打开新标签页准备好可供打印的配货单
          */
-        //$scope.printDistributedOrders = function()
-        //{
-        //    if( $scope.orders && $scope.orders.length > 0 )
-        //    {
-        //        var orderIds = [];
-        //        $.each( $scope.orders, function()
-        //        {
-        //            orderIds.push( this.id );
-        //        });
-        //
-        //        $window.open( '/#/order-print?orderId=' + ( orderIds || '') );
-        //    }
-        //    else
-        //    {
-        //        toastr.warning('没有可以打印的配货单');
-        //    }
-        //};
+        $scope.printDistributedOrders = function()
+        {
+            if( $scope.shipments && $scope.shipments.length > 0 )
+            {
+                var orderIds = [];
+                $.each( $scope.shipments, function()
+                {
+                    orderIds.push( this.id );
+                });
+
+                $window.open( '/#/order-print?orderId=' + ( orderIds || '') );
+            }
+            else
+            {
+                toastr.warning('没有可以打印的配货单');
+            }
+        };
 
         /** 锁定/解锁同品更名
          */
