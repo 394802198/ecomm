@@ -10,6 +10,7 @@ import org.json.simple.JSONObject;
 
 import com.sooeez.ecomm.api.mdd.EcommUtils;
 import com.sooeez.ecomm.api.mdd.constant.RespondCode;
+import com.sooeez.ecomm.domain.Order;
 
 public class OrderInfo
 {
@@ -69,6 +70,10 @@ public class OrderInfo
 	 * 额外属性
 	 */
 	private Long				logTime;
+	/*
+	 * 暂存属性
+	 */
+	private Order				order;
 
 	public Long getEcommOrderId()
 	{
@@ -538,6 +543,16 @@ public class OrderInfo
 	public void setLogTime( Long logTime )
 	{
 		this.logTime = logTime;
+	}
+
+	public Order getOrder()
+	{
+		return order;
+	}
+
+	public void setOrder( Order order )
+	{
+		this.order = order;
 	}
 
 	public OrderInfo()

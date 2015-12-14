@@ -11,7 +11,7 @@ angular.module('ecommApp')
         $scope.courier = {};
         $scope.defaultQuery = {
             number: 0,
-            size: 100,
+            size: 50,
             sort: ['internalCreateTime,desc'],
             warehouse: undefined,
             shop: undefined,
@@ -533,13 +533,13 @@ angular.module('ecommApp')
         };
 
 
-        function executeShipmentOperationReview( query, action )
+        function executeShipmentOperationReview( action )
         {
             var data = {
                 action                      : action,
-                warehouseId                 : query.warehouse ? query.warehouse.id : null,
-                shopId                      : query.shop ? query.shop.id : null,
-                deleted                     : false,
+                //warehouseId                 : query.warehouse ? query.warehouse.id : null,
+                //shopId                      : query.shop ? query.shop.id : null,
+                //deleted                     : false,
                 orders                      : orderService.selectedOrders,
                 //selectedCourier             : $scope.courier.selected,
                 dataMap                     :
@@ -583,7 +583,7 @@ angular.module('ecommApp')
             });
         }
 
-        executeShipmentOperationReview( $scope.query, 0, 'VERIFY' );
+        executeShipmentOperationReview( 'VERIFY' );
 
         $scope.operateDate = Date.now();
         $scope.operationReview = orderService.getOperationReview;
