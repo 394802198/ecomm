@@ -180,6 +180,7 @@ angular.module('ecommApp')
             }
         };
 
+
         /** 批量操作
          */
         $scope.batchManipulation = function()
@@ -196,9 +197,20 @@ angular.module('ecommApp')
             });
             if ( shipmentService.selectedShipments.length > 0 )
             {
-                if( $scope.batchManipulationValue === 'changeStatus' )
+                if( $scope.batchManipulationValue.indexOf('changeStatus') !== -1 )
                 {
-                    //$scope.showShipmentsCompleteSlide();
+                    var values = $scope.batchManipulationValue.split(':');
+                    var shipStatus = values[1];
+                    for( var selectedShipment in shipmentService.selectedShipments )
+                    {
+                        shipmentService.selectedShipments[ selectedShipment ].shipStatus = shipStatus;
+                    }
+
+                    $scope.targetStatusStr = $scope.StatusStrList[ shipStatus ];
+
+                    console.log( '$scope.targetStatusStr: ' + $scope.targetStatusStr );
+
+                    $('#changeShipmentsStatus').modal('show');
                 }
                 else if( $scope.batchManipulationValue === 'shipmentExport' )
                 {
@@ -208,10 +220,6 @@ angular.module('ecommApp')
                 else if( $scope.batchManipulationValue === 'shipmentPrint' )
                 {
                     toastr.info('发货单打印！');
-                }
-                else if( $scope.batchManipulationValue === 'shipmentObsolete' )
-                {
-                    $('#obsoleteShipments').modal('show');
                 }
             }
             else
@@ -236,6 +244,45 @@ angular.module('ecommApp')
             6   :   '已作废',
             7   :   '待处理'
         };
+
+
+        /**
+         * 批量发货单切换状态 : 开始
+         */
+        $scope.changeShipmentsStatus = function()
+        {
+            var shipment =
+            {
+                shipments   :  shipmentService.selectedShipments
+            };
+
+            shipmentService.changeShipmentsStatus( shipment, function( s )
+            {
+                console.log( 's: ' );
+                console.log( s );
+                console.log( '$scope.search( $scope.query );' );
+                $scope.search( $scope.query );
+            });
+
+            $('#changeShipmentsStatus').modal('hide');
+
+            var shipments = $scope.page.content;
+            for( var selectedShipment in shipmentService.selectedShipments )
+            {
+                for( var shipmentIndex in shipments )
+                {
+                    if( shipments[ shipmentIndex].id === shipmentService.selectedShipments[ selectedShipment].id )
+                    {
+                        shipments[ shipmentIndex ].shipStatus = shipmentService.selectedShipments[ selectedShipment].shipStatus;
+                    }
+                }
+            }
+
+            toastr.success('切换状态至［' + $scope.targetStatusStr + '］');
+        };
+        /**
+         * 批量发货单切换状态 : 结束
+         */
 
         /**
          * 单个发货单切换状态 : 开始
