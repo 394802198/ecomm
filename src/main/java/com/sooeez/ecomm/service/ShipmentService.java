@@ -38,6 +38,7 @@ import com.sooeez.ecomm.domain.Shop;
 import com.sooeez.ecomm.dto.OperationReviewDTO;
 import com.sooeez.ecomm.dto.OperationReviewShipmentDTO;
 import com.sooeez.ecomm.repository.ObjectProcessRepository;
+import com.sooeez.ecomm.repository.OrderItemRepository;
 import com.sooeez.ecomm.repository.OrderRepository;
 import com.sooeez.ecomm.repository.ShipmentItemRepository;
 import com.sooeez.ecomm.repository.ShipmentRepository;
@@ -52,6 +53,8 @@ public class ShipmentService
 	private ShopRepository			shopRepository;
 	@Autowired
 	private OrderRepository			orderRepository;
+	@Autowired
+	private OrderItemRepository		orderItemRepository;
 	@Autowired
 	private ShipmentRepository		shipmentRepository;
 	@Autowired
@@ -71,43 +74,95 @@ public class ShipmentService
 	 */
 	public List< Shipment > changeShipmentsStatus( Shipment shipment )
 	{
-		return new ArrayList< Shipment >();
+		for( Shipment s : shipment.getShipments() )
+		{
+			this.changeShipmentStatus( s );
+		}
+		return shipment.getShipments();
 	}
 
 	/**
 	 * 单个更改状态
 	 */
+	@Transactional
 	public Shipment changeShipmentStatus( Shipment shipment )
 	{
 		/**
-		 * 如果切换状态至［已发出］ 1 : '已打印', 2 : '配货完成', 3 : '已发出', 4 : '已签收', 5 : '配送异常',
-		 * 6 : '已作废', 7 : '待处理'
+		 * 1 : '已打印', 2 : '配货完成', 3 : '已发出', 4 : '已签收', 5 : '配送异常', 6 : '已作废', 7
+		 * : '待处理'
 		 */
-		System.out.println( "shipment.getShipStatus(): " + shipment.getShipStatus() );
-		// if( shipment.getShipStatus() != null &&
-		// shipment.getShipStatus().equals( 3 ) )
-		// {
-		// /* 更新订单状态至：店铺的完成状态 */
-		// Order order = this.orderRepository.findOne( shipment.getOrderId() );
-		//
-		// Integer qtyTotalRecentDispatched = order.getQtyTotalItemShipped() +
-		// shipment.getQtyTotalItemShipped();
-		//
-		// /* 更新订单的［运送数量］ */
-		// this.orderRepository.updateQtyTotalItemShipped(
-		// qtyTotalRecentDispatched, order.getId() );
-		//
-		// /* 如果［当前总发货数量］大于等于［订购数量］ */
-		// if( qtyTotalRecentDispatched >= order.getQtyTotalItemOrdered() )
-		// {
-		// Long stepId = order.getShop().getCompleteStep().getId();
-		// Long processId = order.getShop().getCompleteStep().getProcessId();
-		// Integer objectType = order.getShop().getCompleteStep().getType();
-		// this.objectProcessRepository.updateStepId( stepId, order.getId(),
-		// processId, objectType);
-		// }
-		// }
-		return new Shipment();
+		if( shipment.getShipStatus() != null )
+		{
+			Shipment s = this.shipmentRepository.findOne( shipment.getId() );
+
+			Boolean isShipmentStatusUpdatable = false;
+
+			/*
+			 * 不处于［已签收］或［已作废］，或者是从［已发出］切换至［已签收］
+			 */
+			if( ! s.getShipStatus().equals( 4 ) ||
+				! s.getShipStatus().equals( 6 ) ||
+				( s.getShipStatus().equals( 3 ) && shipment.getShipStatus().equals( 4 ) ) )
+			{
+				isShipmentStatusUpdatable = true;
+			}
+
+			/*
+			 * 是否可以更新［发货单］状态
+			 */
+			if( isShipmentStatusUpdatable )
+			{
+				this.shipmentRepository.updateShipStatus( shipment.getShipStatus(), shipment.getId() );
+
+				Boolean isOrderStatusUpdatable = false;
+
+				/*
+				 * 如果切换至［已发货］或［已签收］，并且发货单不处于［已发货］或［已签收］或［已作废］
+				 */
+				if( ( shipment.getShipStatus().equals( 3 ) || shipment.getShipStatus().equals( 4 ) ) &&
+					( ! s.getShipStatus().equals( 3 ) ||
+						! s.getShipStatus().equals( 4 ) || ! s.getShipStatus().equals( 6 ) ) )
+				{
+					isOrderStatusUpdatable = true;
+				}
+
+				if( isOrderStatusUpdatable )
+				{
+					/* 更新订单状态至：店铺的完成状态 */
+					Order order = this.orderRepository.findOne( shipment.getOrderId() );
+
+					int qtyTotalItemShipped = this.shipmentRepository.getQtyShippedSumByOrderId( order.getId() );
+
+					/* 更新订单的［运送数量］ */
+					this.orderRepository.updateQtyTotalItemShippedById( qtyTotalItemShipped, order.getId() );
+
+					/* 如果［当前总发货数量］大于等于［订购数量］ */
+					if( qtyTotalItemShipped >= order.getQtyTotalItemOrdered() )
+					{
+						Long stepId = order.getShop().getCompleteStep().getId();
+						Long processId = order.getShop().getCompleteStep().getProcessId();
+						Integer objectType = order.getShop().getCompleteStep().getType();
+						this.objectProcessRepository.updateStepId( stepId, order.getId(), processId, objectType );
+					}
+
+					/*
+					 * 如果有订单详情，则需要更新订单详情的发货数量
+					 */
+					if( order.getItems() != null && order.getItems().size() > 0 )
+					{
+						for( OrderItem orderItem : order.getItems() )
+						{
+							int qtyShipped = this.shipmentItemRepository
+								.getQtyShippedSumByOrderItemId( orderItem.getId() );
+
+							this.orderItemRepository.updateQtyShippedById( qtyShipped, orderItem.getId() );
+
+						}
+					}
+				}
+			}
+		}
+		return shipment;
 	}
 
 	@Transactional
@@ -118,12 +173,12 @@ public class ShipmentService
 		/*
 		 * 如果有用户指定合并的发货单，则最应该先清除完成后冗余的发货单
 		 */
-		if ( shipment.getDeleteIds() != null && shipment.getDeleteIds().size() > 0 )
+		if( shipment.getDeleteIds() != null && shipment.getDeleteIds().size() > 0 )
 		{
 			StringBuilder deleteIdsBuilder = new StringBuilder();
-			for ( Long deleteId : shipment.getDeleteIds() )
+			for( Long deleteId : shipment.getDeleteIds() )
 			{
-				if ( ! deleteIdsBuilder.toString().trim().equals( "" ) )
+				if( ! deleteIdsBuilder.toString().trim().equals( "" ) )
 				{
 					deleteIdsBuilder.append( "," );
 				}
@@ -141,17 +196,17 @@ public class ShipmentService
 		 * 先做发货单的改动： 1. 更新 last_update 用 new Date() 2. 将发货单详情 qty_shipped 累加至
 		 * qty_total_item_shipped
 		 */
-		if ( shipment.getShipments() != null && shipment.getShipments().size() > 0 )
+		if( shipment.getShipments() != null && shipment.getShipments().size() > 0 )
 		{
 			List< Long > orderIds = new ArrayList< Long >();
 
-			for ( Shipment finalShipment : shipment.getShipments() )
+			for( Shipment finalShipment : shipment.getShipments() )
 			{
 				Integer qtyTotalItemShipped = 0;
 
-				if ( finalShipment.getShipmentItems() != null && finalShipment.getShipmentItems().size() > 0 )
+				if( finalShipment.getShipmentItems() != null && finalShipment.getShipmentItems().size() > 0 )
 				{
-					for ( ShipmentItem shipmentItem : finalShipment.getShipmentItems() )
+					for( ShipmentItem shipmentItem : finalShipment.getShipmentItems() )
 					{
 						qtyTotalItemShipped += shipmentItem.getQtyShipped() != null ? shipmentItem.getQtyShipped() : 0;
 					}
@@ -160,7 +215,7 @@ public class ShipmentService
 				finalShipment.setQtyTotalItemShipped( qtyTotalItemShipped );
 				finalShipment.setLastUpdate( new Date() );
 
-				if ( ! orderIds.contains( finalShipment.getOrderId() ) )
+				if( ! orderIds.contains( finalShipment.getOrderId() ) )
 				{
 					orderIds.add( finalShipment.getOrderId() );
 				}
@@ -168,9 +223,9 @@ public class ShipmentService
 			finalResult = this.shipmentRepository.save( shipment.getShipments() );
 
 			StringBuilder orderIdBuilder = new StringBuilder();
-			for ( Long orderId : orderIds )
+			for( Long orderId : orderIds )
 			{
-				if ( ! orderIdBuilder.toString().trim().equals( "" ) )
+				if( ! orderIdBuilder.toString().trim().equals( "" ) )
 				{
 					orderIdBuilder.append( "," );
 				}
@@ -185,27 +240,27 @@ public class ShipmentService
 			 * qty_total_item_shipped 累加至 qty_total_item_shipped 发货单详情 3.
 			 * qty_shipped 更新至对应订单详情 qty_shipped
 			 */
-			if ( ordersQuery.getResultList().size() > 0 )
+			if( ordersQuery.getResultList().size() > 0 )
 			{
 				@SuppressWarnings( "unchecked" )
 				List< Order > orders = ordersQuery.getResultList();
-				for ( Order finalOrder : orders )
+				for( Order finalOrder : orders )
 				{
 					/*
 					 * qty_total_item_shipped 累加至 qty_total_item_shipped 将发货单详情
 					 */
 					Integer qtyTotalItemShipped = 0;
 
-					if ( finalOrder.getShipments() != null && finalOrder.getShipments().size() > 0 )
+					if( finalOrder.getShipments() != null && finalOrder.getShipments().size() > 0 )
 					{
 						List< ShipmentItem > orderShipmentItems = new ArrayList< ShipmentItem >();
-						
-						for ( Shipment orderShipment : finalOrder.getShipments() )
+
+						for( Shipment orderShipment : finalOrder.getShipments() )
 						{
-							if ( orderShipment.getShipmentItems() != null &&
+							if( orderShipment.getShipmentItems() != null &&
 								orderShipment.getShipmentItems().size() > 0 )
 							{
-								for ( ShipmentItem shipmentItem : orderShipment.getShipmentItems() )
+								for( ShipmentItem shipmentItem : orderShipment.getShipmentItems() )
 								{
 									orderShipmentItems.add( shipmentItem );
 								}
@@ -217,20 +272,20 @@ public class ShipmentService
 						/*
 						 * qty_shipped 更新至对应订单详情 qty_shipped
 						 */
-						if ( finalOrder.getItems() != null && finalOrder.getItems().size() > 0 )
+						if( finalOrder.getItems() != null && finalOrder.getItems().size() > 0 )
 						{
-							for ( OrderItem orderItem : finalOrder.getItems() )
+							for( OrderItem orderItem : finalOrder.getItems() )
 							{
-								if ( orderShipmentItems != null && orderShipmentItems.size() > 0 )
+								if( orderShipmentItems != null && orderShipmentItems.size() > 0 )
 								{
 									Integer qtyShipped = 0;
 
-									for ( ShipmentItem orderShipmentItem : orderShipmentItems )
+									for( ShipmentItem orderShipmentItem : orderShipmentItems )
 									{
 										if( orderItem.getId().equals( orderShipmentItem.getOrderItemId() ) )
 										{
 											qtyShipped += orderShipmentItem.getQtyShipped() != null
-													? orderShipmentItem.getQtyShipped() : 0;
+												? orderShipmentItem.getQtyShipped() : 0;
 										}
 									}
 									orderItem.setQtyShipped( qtyShipped );
@@ -242,7 +297,7 @@ public class ShipmentService
 					finalOrder.setQtyTotalItemShipped( qtyTotalItemShipped );
 					finalOrder.setLastUpdateTime( new Date() );
 				}
-				
+
 				this.orderRepository.save( orders );
 			}
 		}
@@ -269,7 +324,7 @@ public class ShipmentService
 	{
 		String strStatus = "";
 
-		switch ( shipStatus )
+		switch( shipStatus )
 		{
 			case 1 :
 				strStatus = "已打印";
@@ -299,21 +354,21 @@ public class ShipmentService
 	public void addShipmentToCell( Shipment shipment, Sheet sheet, CellStyle contentStyle, Integer rowIndex )
 	{
 		/* 如果存在指定发货单 */
-		if ( shipment != null )
+		if( shipment != null )
 		{
 			StringBuffer shippedProductsBuffer = new StringBuffer();
 
 			List< ShipmentItem > shipmentItems = shipment.getShipmentItems();
-			if ( shipmentItems != null && shipmentItems.size() > 0 )
+			if( shipmentItems != null && shipmentItems.size() > 0 )
 			{
-				for ( int i = 0; i < shipmentItems.size(); i++ )
+				for( int i = 0; i < shipmentItems.size(); i++ )
 				{
-					if ( ! shippedProductsBuffer.toString().equals( "" ) )
+					if( ! shippedProductsBuffer.toString().equals( "" ) )
 					{
 						shippedProductsBuffer.append( ", " );
 					}
 					OrderItem orderItem = shipmentItems.get( i ).getOrderItem();
-					if ( orderItem != null && orderItem.getProduct() != null )
+					if( orderItem != null && orderItem.getProduct() != null )
 					{
 						Product product = orderItem.getProduct();
 						shippedProductsBuffer.append( product.getShortName() );
@@ -333,7 +388,7 @@ public class ShipmentService
 			};
 
 			Row contentRow = sheet.createRow( rowIndex );
-			for ( int i = 0; i < contents.length; i++ )
+			for( int i = 0; i < contents.length; i++ )
 			{
 				Cell cell = contentRow.createCell( i );
 
@@ -354,9 +409,9 @@ public class ShipmentService
 	{
 		List< Shipment > shipments = null;
 		StringBuffer shipmentIdsBuffer = new StringBuffer();
-		for ( Long shipmentId : ids )
+		for( Long shipmentId : ids )
 		{
-			if ( ! shipmentIdsBuffer.toString().equals( "" ) )
+			if( ! shipmentIdsBuffer.toString().equals( "" ) )
 			{
 				shipmentIdsBuffer.append( ", " );
 			}
@@ -380,7 +435,7 @@ public class ShipmentService
 	{
 		Page< Shipment > page = this.shipmentRepository.findAll( getShipmentSpecification( shipment ), pageable );
 		List< Shipment > shipments = page.getContent();
-		for ( Shipment finalShipment : shipments )
+		for( Shipment finalShipment : shipments )
 		{
 			/* 根据［订单号］获取［订单］再根据［店铺号］获取［店铺］，并将［店铺］数据存到［店铺属性］上 */
 			Order order = this.orderRepository.getOne( finalShipment.getOrderId() );
@@ -391,23 +446,23 @@ public class ShipmentService
 			/**
 			 * 获取操作发货单详情所需信息
 			 */
-			if ( finalShipment.getShipmentItems() != null && finalShipment.getShipmentItems().size() > 0 )
+			if( finalShipment.getShipmentItems() != null && finalShipment.getShipmentItems().size() > 0 )
 			{
 				String orderSQL = "SELECT * FROM t_order " + "WHERE id = ?1 ";
 				Query orderQuery = em.createNativeQuery( orderSQL, Order.class );
 				orderQuery.setParameter( 1, finalShipment.getOrderId() );
-				if ( orderQuery.getResultList().size() > 0 )
+				if( orderQuery.getResultList().size() > 0 )
 				{
 					Order orderResult = ( Order ) orderQuery.getSingleResult();
 
-					for ( ShipmentItem shipmentItem : finalShipment.getShipmentItems() )
+					for( ShipmentItem shipmentItem : finalShipment.getShipmentItems() )
 					{
-						if ( orderResult.getItems() != null && orderResult.getItems().size() > 0 )
+						if( orderResult.getItems() != null && orderResult.getItems().size() > 0 )
 						{
 							List< OrderItem > items = orderResult.getItems();
-							for ( OrderItem item : items )
+							for( OrderItem item : items )
 							{
-								if ( shipmentItem.getOrderItemId().equals( item.getId() ) )
+								if( shipmentItem.getOrderItemId().equals( item.getId() ) )
 								{
 									shipmentItem.setShortName( item.getProduct().getShortName() );
 									shipmentItem
@@ -427,7 +482,7 @@ public class ShipmentService
 		Root< Shipment > root, List< Predicate > predicates, CriteriaBuilder cb, String dateFieldName, String dateStart,
 		String dateEnd )
 	{
-		if ( dateStart != null && dateEnd != null )
+		if( dateStart != null && dateEnd != null )
 		{
 			try
 			{
@@ -440,7 +495,7 @@ public class ShipmentService
 				e.printStackTrace();
 			}
 		}
-		else if ( dateStart != null )
+		else if( dateStart != null )
 		{
 			try
 			{
@@ -452,7 +507,7 @@ public class ShipmentService
 				e.printStackTrace();
 			}
 		}
-		else if ( dateEnd != null )
+		else if( dateEnd != null )
 		{
 			try
 			{
@@ -471,23 +526,23 @@ public class ShipmentService
 		return ( root, query, cb ) ->
 		{
 			List< Predicate > predicates = new ArrayList< >();
-			if ( shipment.getShipWarehouseId() != null )
+			if( shipment.getShipWarehouseId() != null )
 			{
 				predicates.add( cb.equal( root.get( "shipWarehouseId" ), shipment.getShipWarehouseId() ) );
 			}
-			if ( shipment.getOrderId() != null )
+			if( shipment.getOrderId() != null )
 			{
 				predicates.add( cb.equal( root.get( "orderId" ), shipment.getOrderId() ) );
 			}
-			if ( shipment.getCourierId() != null )
+			if( shipment.getCourierId() != null )
 			{
 				predicates.add( cb.equal( root.get( "courierId" ), shipment.getCourierId() ) );
 			}
-			if ( StringUtils.hasText( shipment.getShipNumber() ) )
+			if( StringUtils.hasText( shipment.getShipNumber() ) )
 			{
 				predicates.add( cb.like( root.get( "shipNumber" ), "%" + shipment.getShipNumber() + "%" ) );
 			}
-			if ( shipment.getShipStatus() != null )
+			if( shipment.getShipStatus() != null )
 			{
 				predicates.add( cb.equal( root.get( "shipStatus" ), shipment.getShipStatus() ) );
 			}
@@ -502,7 +557,7 @@ public class ShipmentService
 			addPredicateDateStartEnd( root, predicates, cb, "signupTime", shipment.getSignupTimeStart(),
 				shipment.getSignupTimeEnd() );
 
-			if ( shipment.getShopId() != null )
+			if( shipment.getShopId() != null )
 			{
 				/**
 				 * [AND] WHERE order_id IN ( SELECT id FROM t_order WHERE
@@ -515,7 +570,7 @@ public class ShipmentService
 				predicates.add( cb.in( root.get( "orderId" ) ).value( orderSubquery ) );
 			}
 
-			if ( shipment.getDeliveryMethod() != null )
+			if( shipment.getDeliveryMethod() != null )
 			{
 				/**
 				 * [AND] WHERE order_id IN ( SELECT id FROM t_order WHERE
@@ -528,7 +583,7 @@ public class ShipmentService
 				predicates.add( cb.in( root.get( "orderId" ) ).value( orderSubquery ) );
 			}
 
-			if ( shipment.getShippingDescription() != null && ! shipment.getShippingDescription().trim().equals( "" ) )
+			if( shipment.getShippingDescription() != null && ! shipment.getShippingDescription().trim().equals( "" ) )
 			{
 				/**
 				 * [AND] WHERE order_id IN ( SELECT id FROM t_order WHERE
@@ -551,7 +606,7 @@ public class ShipmentService
 	public void setConfirmable( OperationReviewShipmentDTO review )
 	{
 		/* 如果验证全都通过 */
-		if ( ! review.getCheckMap().get( "emptyCourierError" ) &&
+		if( ! review.getCheckMap().get( "emptyCourierError" ) &&
 			! review.getCheckMap().get( "emptyShipNumberError" ) &&
 			! review.getCheckMap().get( "emptyReceiveNameError" ) &&
 			! review.getCheckMap().get( "emptyReceivePhoneError" ) &&
@@ -569,38 +624,37 @@ public class ShipmentService
 			boolean isEmptyReceiveAddressError = false;
 
 			/* 发货单没有指定快递公司，并且没有取消验证 */
-			if ( review.getCheckMap().get( "emptyCourierError" ) &&
-				! review.getIgnoredMap().get( "emptyCourierError" ) )
+			if( review.getCheckMap().get( "emptyCourierError" ) && ! review.getIgnoredMap().get( "emptyCourierError" ) )
 			{
 				isEmptyCourierError = true;
 			}
 			/* 发货单没有指定快递单号，并且没有取消验证 */
-			if ( review.getCheckMap().get( "emptyShipNumberError" ) &&
+			if( review.getCheckMap().get( "emptyShipNumberError" ) &&
 				! review.getIgnoredMap().get( "emptyShipNumberError" ) )
 			{
 				isEmptyShipNumberError = true;
 			}
 			/* 发货单没有填写收件人姓名，并且没有取消验证 */
-			if ( review.getCheckMap().get( "emptyReceiveNameError" ) &&
+			if( review.getCheckMap().get( "emptyReceiveNameError" ) &&
 				! review.getIgnoredMap().get( "emptyReceiveNameError" ) )
 			{
 				isEmptyReceiveNameError = true;
 			}
 			/* 发货单没有填写收件人电话，并且没有取消验证 */
-			if ( review.getCheckMap().get( "emptyReceivePhoneError" ) &&
+			if( review.getCheckMap().get( "emptyReceivePhoneError" ) &&
 				! review.getIgnoredMap().get( "emptyReceivePhoneError" ) )
 			{
 				isEmptyReceivePhoneError = true;
 			}
 			/* 发货单没有填写收件人地址，并且没有取消验证 */
-			if ( review.getCheckMap().get( "emptyReceiveAddressError" ) &&
+			if( review.getCheckMap().get( "emptyReceiveAddressError" ) &&
 				! review.getIgnoredMap().get( "emptyReceiveAddressError" ) )
 			{
 				isEmptyReceiveAddressError = true;
 			}
 
 			/* 如果有一个验证不通过 */
-			if ( isEmptyCourierError ||
+			if( isEmptyCourierError ||
 				isEmptyShipNumberError || isEmptyReceiveNameError || isEmptyReceivePhoneError ||
 				isEmptyReceiveAddressError )
 			{
@@ -625,7 +679,7 @@ public class ShipmentService
 		Shipment shipment = review.getShipment();
 
 		/* 如果有可完成的发货单 */
-		if ( shipment != null )
+		if( shipment != null )
 		{
 			/* 更新订单状态至：店铺的完成状态 */
 			Order order = this.orderRepository.findOne( shipment.getOrderId() );
@@ -633,10 +687,10 @@ public class ShipmentService
 			Integer qtyTotalRecentDispatched = order.getQtyTotalItemShipped() + shipment.getQtyTotalItemShipped();
 
 			/* 更新订单的［运送数量］ */
-			this.orderRepository.updateQtyTotalItemShipped( qtyTotalRecentDispatched, order.getId() );
+			this.orderRepository.updateQtyTotalItemShippedById( qtyTotalRecentDispatched, order.getId() );
 
 			/* 如果［当前总发货数量］大于等于［订购数量］ */
-			if ( qtyTotalRecentDispatched >= order.getQtyTotalItemOrdered() )
+			if( qtyTotalRecentDispatched >= order.getQtyTotalItemOrdered() )
 			{
 				Long stepId = order.getShop().getCompleteStep().getId();
 				Long processId = order.getShop().getCompleteStep().getProcessId();
@@ -678,7 +732,7 @@ public class ShipmentService
 		Shipment reviewShipment = review.getShipment();
 
 		/* 验证 1 ： 是否指定快递公司 */
-		if ( reviewShipment.getCourierId() != null && ! reviewShipment.getCourierId().equals( "" ) )
+		if( reviewShipment.getCourierId() != null && ! reviewShipment.getCourierId().equals( "" ) )
 		{
 			review.getCheckMap().put( "emptyCourierError", false );
 		}
@@ -688,7 +742,7 @@ public class ShipmentService
 		}
 
 		/* 验证 2 ： 是否指定快递单号 */
-		if ( reviewShipment.getShipNumber() != null && ! reviewShipment.getShipNumber().trim().equals( "" ) )
+		if( reviewShipment.getShipNumber() != null && ! reviewShipment.getShipNumber().trim().equals( "" ) )
 		{
 			review.getCheckMap().put( "emptyShipNumberError", false );
 		}
@@ -698,7 +752,7 @@ public class ShipmentService
 		}
 
 		/* 验证 3 ： 订单的收件人姓名是否为空 */
-		if ( reviewShipment.getReceiveName() != null && ! reviewShipment.getReceiveName().trim().equals( "" ) )
+		if( reviewShipment.getReceiveName() != null && ! reviewShipment.getReceiveName().trim().equals( "" ) )
 		{
 			review.getCheckMap().put( "emptyReceiveNameError", false );
 		}
@@ -708,7 +762,7 @@ public class ShipmentService
 		}
 
 		/* 验证 4 ： 订单的收件人电话是否为空 */
-		if ( reviewShipment.getReceivePhone() != null && ! reviewShipment.getReceivePhone().trim().equals( "" ) )
+		if( reviewShipment.getReceivePhone() != null && ! reviewShipment.getReceivePhone().trim().equals( "" ) )
 		{
 			review.getCheckMap().put( "emptyReceivePhoneError", false );
 		}
@@ -718,7 +772,7 @@ public class ShipmentService
 		}
 
 		/* 验证 5 ： 订单的收件人地址是否为空 */
-		if ( reviewShipment.getReceiveAddress() != null && ! reviewShipment.getReceiveAddress().trim().equals( "" ) )
+		if( reviewShipment.getReceiveAddress() != null && ! reviewShipment.getReceiveAddress().trim().equals( "" ) )
 		{
 			review.getCheckMap().put( "emptyReceiveAddressError", false );
 		}
@@ -731,7 +785,7 @@ public class ShipmentService
 		this.setConfirmable( review );
 
 		/* 如果验证全都通过，并且操作类型是 CONFIRM 则执行完成操作 */
-		if ( review.isConfirmable() && review.getAction().equals( OperationReviewDTO.CONFIRM ) )
+		if( review.isConfirmable() && review.getAction().equals( OperationReviewDTO.CONFIRM ) )
 		{
 			/* 执行完成发货单操作 */
 			this.executeShipmentCompletion( review );
@@ -746,10 +800,10 @@ public class ShipmentService
 	{
 		List< Shipment > reviewShipments = review.getShipments();
 
-		for ( Shipment reviewShipment : reviewShipments )
+		for( Shipment reviewShipment : reviewShipments )
 		{
 			/* 验证 1 ： 是否指定快递公司 */
-			if ( reviewShipment.getCourierId() != null && ! reviewShipment.getCourierId().equals( "" ) )
+			if( reviewShipment.getCourierId() != null && ! reviewShipment.getCourierId().equals( "" ) )
 			{
 				review.getCheckMap().put( "emptyCourierError", false );
 			}
@@ -759,7 +813,7 @@ public class ShipmentService
 			}
 
 			/* 验证 2 ： 是否指定快递单号 */
-			if ( reviewShipment.getShipNumber() != null && ! reviewShipment.getShipNumber().trim().equals( "" ) )
+			if( reviewShipment.getShipNumber() != null && ! reviewShipment.getShipNumber().trim().equals( "" ) )
 			{
 				review.getCheckMap().put( "emptyShipNumberError", false );
 			}
@@ -769,7 +823,7 @@ public class ShipmentService
 			}
 
 			/* 验证 3 ： 订单的收件人姓名是否为空 */
-			if ( reviewShipment.getReceiveName() != null && ! reviewShipment.getReceiveName().trim().equals( "" ) )
+			if( reviewShipment.getReceiveName() != null && ! reviewShipment.getReceiveName().trim().equals( "" ) )
 			{
 				review.getCheckMap().put( "emptyReceiveNameError", false );
 			}
@@ -779,7 +833,7 @@ public class ShipmentService
 			}
 
 			/* 验证 4 ： 订单的收件人电话是否为空 */
-			if ( reviewShipment.getReceivePhone() != null && ! reviewShipment.getReceivePhone().trim().equals( "" ) )
+			if( reviewShipment.getReceivePhone() != null && ! reviewShipment.getReceivePhone().trim().equals( "" ) )
 			{
 				review.getCheckMap().put( "emptyReceivePhoneError", false );
 			}
@@ -789,8 +843,7 @@ public class ShipmentService
 			}
 
 			/* 验证 5 ： 订单的收件人地址是否为空 */
-			if ( reviewShipment.getReceiveAddress() != null &&
-				! reviewShipment.getReceiveAddress().trim().equals( "" ) )
+			if( reviewShipment.getReceiveAddress() != null && ! reviewShipment.getReceiveAddress().trim().equals( "" ) )
 			{
 				review.getCheckMap().put( "emptyReceiveAddressError", false );
 			}
@@ -804,7 +857,7 @@ public class ShipmentService
 		this.setConfirmable( review );
 
 		/* 如果验证全都通过，并且操作类型是 CONFIRM 则执行完成操作 */
-		if ( review.isConfirmable() && review.getAction().equals( OperationReviewDTO.CONFIRM ) )
+		if( review.isConfirmable() && review.getAction().equals( OperationReviewDTO.CONFIRM ) )
 		{
 			/* 执行完成发货单操作 */
 			this.executeShipmentCompletion( review );
@@ -822,7 +875,7 @@ public class ShipmentService
 	public void setImportConfirmable( OperationReviewShipmentDTO review )
 	{
 		/* 如果验证全都通过 */
-		if ( ! review.getCheckMap().get( "emptyMemoError" ) && ! review.getCheckMap().get( "emptyOrderError" ) )
+		if( ! review.getCheckMap().get( "emptyMemoError" ) && ! review.getCheckMap().get( "emptyOrderError" ) )
 		{
 			review.setConfirmable( true );
 		}
@@ -842,17 +895,17 @@ public class ShipmentService
 		List< Shipment > reviewShipments = review.getShipments();
 		List< Shipment > insertableShipments = new ArrayList< Shipment >();
 
-		for ( Shipment reviewShipment : reviewShipments )
+		for( Shipment reviewShipment : reviewShipments )
 		{
-			if ( ! reviewShipment.getIgnoreCheck() )
+			if( ! reviewShipment.getIgnoreCheck() )
 			{
 				insertableShipments.add( reviewShipment );
 			}
 		}
 
-		if ( insertableShipments.size() > 0 )
+		if( insertableShipments.size() > 0 )
 		{
-			for ( Shipment shipment : insertableShipments )
+			for( Shipment shipment : insertableShipments )
 			{
 				shipment.setLastUpdate( new Date() );
 				shipment.setExecuteOperatorId( executeOperatorId );
@@ -885,7 +938,7 @@ public class ShipmentService
 				query.setParameter( 1, shipment.getId() );
 				query.setParameter( 2, shipment.getShipStatus() );
 				query.setParameter( 3, shipment.getOrderId() );
-				if ( ! query.getResultList().isEmpty() )
+				if( ! query.getResultList().isEmpty() )
 				{
 					shipment = ( Shipment ) query.getSingleResult();
 					isAllMatch = true;
@@ -894,13 +947,13 @@ public class ShipmentService
 				/*
 				 * 1. 如果发货单号，订单号，发货单状态匹配：
 				 */
-				if ( isAllMatch )
+				if( isAllMatch )
 				{
 					boolean isStatusNormal = shipment.getShipStatus().equals( 1 );
 					/*
 					 * a. 状态为［正常］：
 					 */
-					if ( isStatusNormal )
+					if( isStatusNormal )
 					{
 						executeShipmentImportInitUpdate( shipment, 3 );
 					}
@@ -928,7 +981,7 @@ public class ShipmentService
 
 					boolean isStatusNormal = shipment.getShipStatus().equals( 1 );
 
-					if ( isStatusNormal )
+					if( isStatusNormal )
 					{
 						executeShipmentImportInitUpdate( shipment, 3 );
 					}
@@ -955,16 +1008,16 @@ public class ShipmentService
 		Order order = this.orderRepository.findOne( shipment.getOrderId() );
 
 		List< ObjectProcess > processess = order.getProcesses();
-		for ( ObjectProcess op : processess )
+		for( ObjectProcess op : processess )
 		{
-			if ( shipStatus == 3 &&
+			if( shipStatus == 3 &&
 				op.getProcessId().longValue() == order.getShop().getCompleteStep().getProcessId().longValue() )
 			{
 				op.setStep( order.getShop().getCompleteStep() );
 
 				objectProcessRepository.save( op );
 			}
-			else if ( shipStatus == 5 &&
+			else if( shipStatus == 5 &&
 				op.getProcessId().longValue() == order.getShop().getErrorStep().getProcessId().longValue() )
 			{
 				op.setStep( order.getShop().getErrorStep() );
@@ -990,18 +1043,18 @@ public class ShipmentService
 		Integer orderNotMatchCount = 0;
 
 		boolean isEmptyOrderError = false;
-		for ( Shipment shipment : reviewShipments )
+		for( Shipment shipment : reviewShipments )
 		{
 			/*
 			 * 如果发货单被移出
 			 */
-			if ( ! shipment.getIgnoreCheck() )
+			if( ! shipment.getIgnoreCheck() )
 			{
 				String sql = "SELECT COUNT(1) FROM t_order WHERE id = ?1 ";
 				Query query = em.createNativeQuery( sql );
 				query.setParameter( 1, shipment.getOrderId() );
 				BigInteger orderCount = ( BigInteger ) query.getSingleResult();
-				if ( orderCount.compareTo( BigInteger.ZERO ) == 0 )
+				if( orderCount.compareTo( BigInteger.ZERO ) == 0 )
 				{
 					shipment.getCheckMap().put( "emptyOrderError", true );
 
@@ -1013,9 +1066,9 @@ public class ShipmentService
 				 */
 				else
 				{
-					if ( shipment.getShipStatus() != null )
+					if( shipment.getShipStatus() != null )
 					{
-						switch ( shipment.getShipStatus() )
+						switch( shipment.getShipStatus() )
 						{
 							case 1 :
 								normalStatusCount++;
@@ -1054,9 +1107,9 @@ public class ShipmentService
 
 		/* 验证 1 ： 异常发货单是否填写［memo］注释 */
 		boolean isExceptionMemoEmpty = false;
-		for ( Shipment reviewShipment : reviewShipments )
+		for( Shipment reviewShipment : reviewShipments )
 		{
-			if ( reviewShipment.getShipStatus().equals( 5 ) &&
+			if( reviewShipment.getShipStatus().equals( 5 ) &&
 				( reviewShipment.getMemo() == null || reviewShipment.getMemo().trim().equals( "" ) ) &&
 				! reviewShipment.getIgnoreCheck() )
 			{
@@ -1075,7 +1128,7 @@ public class ShipmentService
 		this.setImportConfirmable( review );
 
 		/* 如果验证全都通过，并且操作类型是 CONFIRM 则执行完成操作 */
-		if ( review.isConfirmable() && review.getAction().equals( OperationReviewDTO.CONFIRM ) )
+		if( review.isConfirmable() && review.getAction().equals( OperationReviewDTO.CONFIRM ) )
 		{
 			/* 执行完成发货单操作 */
 			this.executeShipmentImport( review );
