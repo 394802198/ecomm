@@ -14,7 +14,10 @@ angular.module('ecommApp')
             size: 50,
             sort: ['internalCreateTime,desc'],
             warehouse: undefined,
-            shop: undefined,
+            shop: {
+                id:2,
+                name:'mdd'
+            },
             statuses:[],
             shippingDescription: undefined,
             /** 是否显示出过发货单的订单

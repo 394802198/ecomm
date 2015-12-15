@@ -110,31 +110,33 @@ public class ImportOrderFromMDD
 						String sqlOrder = "SELECT * FROM t_order WHERE external_sn = ?1";
 						Query queryOrder = em.createNativeQuery( sqlOrder, Order.class );
 						queryOrder.setParameter( 1, externalSn );
+
 						/*
 						 * 如果存在该订单
 						 */
-						// if ( queryOrder.getResultList().size() > 0 )
-						// {
-						// Order order = ( Order ) queryOrder.getSingleResult();
-						// order.setId( null );
-						// /*
-						// * 如果订单［外部日志时间］和接收到的［日志时间］不匹配，则该订单再外部系统有更新，
-						// * 同时更新该订单信息到我们的系统
-						// */
-						// if ( order.getExternalLogTime() != null &&
-						// externalLogTime != null && !
-						// order.getExternalLogTime().equals( externalLogTime )
-						// )
-						// {
-						// finalOrder = order;
-						// isNotExistedOrUpdated = true;
-						// }
-						// }
-						// else
-						// {
-						// isNotExistedOrUpdated = true;
-						// }
-						isNotExistedOrUpdated = true;
+						if ( queryOrder.getResultList().size() > 0 )
+						{
+							// Order order = ( Order )
+							// queryOrder.getSingleResult();
+							// order.setId( null );
+							// /*
+							// * 如果订单［外部日志时间］和接收到的［日志时间］不匹配，则该订单再外部系统有更新，
+							// * 同时更新该订单信息到我们的系统
+							// */
+							// if ( order.getExternalLogTime() != null &&
+							// externalLogTime != null && !
+							// order.getExternalLogTime().equals(
+							// externalLogTime ) )
+							// {
+							// finalOrder = order;
+							// isNotExistedOrUpdated = true;
+							// }
+						}
+						else
+						{
+							isNotExistedOrUpdated = true;
+						}
+
 						if ( isNotExistedOrUpdated )
 						{
 							EcommHttp orderInfoHttp = new EcommHttp();
@@ -172,6 +174,7 @@ public class ImportOrderFromMDD
 							/*
 							 * 如果该订单任意一个详情的 sku 不存在于 Ecomm 中，则不予以导入
 							 */
+							Boolean isSkuStartsWithFTDOrHAZYOrPA = false;
 							Boolean isAllItemSkuFoundInEcommProduct = true;
 							Boolean isDeliveryMethodCorrect = true;
 
@@ -237,7 +240,7 @@ public class ImportOrderFromMDD
 
 											objectProcess.setStep( finalStep );
 
-											order.setProcesses( new ArrayList<ObjectProcess>() );
+											order.setProcesses( new ArrayList< ObjectProcess >() );
 											order.getProcesses().add( objectProcess );
 										}
 									}
@@ -256,6 +259,18 @@ public class ImportOrderFromMDD
 							{
 								for ( OrderGood orderGood : orderInfo.getGoods() )
 								{
+									/*
+									 * 如果 Sku 以 FTD 或 HAZY 或 PA 开头，则不导入
+									 */
+									if ( orderGood.getGoodsSn() != null &&
+										! orderGood.getGoodsSn().trim().equals( "" ) &&
+										( orderGood.getGoodsSn().startsWith( "FTD" ) ||
+											orderGood.getGoodsSn().startsWith( "HAZY" ) ||
+											orderGood.getGoodsSn().startsWith( "PA" ) ) )
+									{
+										isSkuStartsWithFTDOrHAZYOrPA = true;
+									}
+
 									OrderItem orderItem = new OrderItem();
 									Integer goodsNumber = orderGood.getGoodsNumber() != null
 										? orderGood.getGoodsNumber().intValue() : 0;
@@ -288,7 +303,6 @@ public class ImportOrderFromMDD
 									 */
 									if ( isAvailable )
 									{
-
 										/* Accumulate total weight */
 										weight += orderItem.getQtyOrdered() * orderItem.getUnitWeight();
 
@@ -329,7 +343,6 @@ public class ImportOrderFromMDD
 									// goods_id 商品ID
 									// market_price 市场价
 									// suppliers_id 供货商ID
-
 								}
 
 								if ( order.getShippingFee() != null )
@@ -442,7 +455,8 @@ public class ImportOrderFromMDD
 							// isAllItemSkuFoundInEcommProduct );
 							// System.out.println( "isDeliveryMethodCorrect: " +
 							// isDeliveryMethodCorrect );
-							if ( isAllItemSkuFoundInEcommProduct && isDeliveryMethodCorrect )
+							if ( isAllItemSkuFoundInEcommProduct &&
+								isDeliveryMethodCorrect && ! isSkuStartsWithFTDOrHAZYOrPA )
 							{
 								finalOrders.add( order );
 							}

@@ -19,29 +19,40 @@ import com.sooeez.ecomm.domain.*;
 import com.sooeez.ecomm.repository.UserRepository;
 
 @Component
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService
+{
 
-	private final Logger log = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
+	private final Logger log = LoggerFactory.getLogger( UserDetailsServiceImpl.class );
 
 	@Autowired
 	private UserRepository userRepository;
 
 	@Override
 	@Transactional
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+	public UserDetails loadUserByUsername( String username ) throws UsernameNotFoundException
+	{
 
-		log.debug("Authenticating {}", username);
+		log.debug( "Authenticating {}", username );
 
-		List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+		List< GrantedAuthority > grantedAuthorities = new ArrayList< >();
 
-		User user = userRepository.findOneByUsernameAndEnabled(username, true);
+		User user = userRepository.findOneByUsernameAndEnabled( username, true );
 
-		user.getRoles().forEach(role -> {
-			grantedAuthorities.add(new SimpleGrantedAuthority(role.getCode()));
-		});
-		
-		UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-				user.getUsername(), user.getPassword(), grantedAuthorities);
+		UserDetails userDetails = null;
+
+		if ( user != null )
+		{
+			if( user.getRoles() != null && user.getRoles().size() > 0  )
+			{
+				user.getRoles().forEach( role ->
+				{
+					grantedAuthorities.add( new SimpleGrantedAuthority( role.getCode() ) );
+				} );
+			}
+
+			userDetails = new org.springframework.security.core.userdetails.User( user.getUsername(), user
+				.getPassword(), grantedAuthorities );
+		}
 
 		return userDetails;
 	}

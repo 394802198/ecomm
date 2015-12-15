@@ -418,7 +418,7 @@
                         <td colspan="20">
                             <nav class="page-list">
                                 <div class="page-total">
-                                    共 <strong>{{ operationReview().totalNumber }}</strong> 条, 每页显示
+                                    共 <strong>{{ operationReview().totalElements }}</strong> 条, 每页显示
                                     <input type="number" class="form-control" ng-model="query.size" ng-keypress="search( $event )">
                                     <!-- <select class="form-control" style="display: inline; padding:0" ng-model="query.size" ng-options="value for value in [10, 20, 30, 40, 50]" ng-change="turnPage(0)">
                                     </select> -->
