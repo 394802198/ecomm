@@ -44,7 +44,7 @@ public class Product implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	@Column(name = "temp_purchasing")
+	@Column(name = "temp_purchasing", nullable = false)
 	private Boolean tempPurchasing;
 	
 	@Column(name = "product_type", nullable = false)
