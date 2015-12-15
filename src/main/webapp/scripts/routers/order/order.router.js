@@ -40,7 +40,7 @@ angular.module('ecommApp')
                 }
             },
             data: {
-                roles: [ROLES.SYSTEM_ADMIN, ROLES.ORDER_ADMIN]
+                roles: [ROLES.SYSTEM_ADMIN, ROLES.ORDER_ADMIN, ROLES.SHIPMENT_ADMIN]
             }
         });
 }]);
