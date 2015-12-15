@@ -18,7 +18,6 @@ public class ImportOrderFromMDDScheduler
 
 	// 每 10 秒钟执行一次
 	// @Scheduled( cron = "*/10 * * * * * " )
-	// @Scheduled( cron = "10 * * * * * " )
 	// private void importOrderFromMDDEveryTenSeconds() throws Exception
 	// {
 	// this.importOrderFromMDD.importOrderFromMDD();

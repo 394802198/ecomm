@@ -1152,6 +1152,11 @@ public class OrderService
 		StringBuffer bufferSQL = new StringBuffer();
 		bufferSQL.append( "SELECT `order`.* FROM t_order as `order` " );
 		bufferSQL.append( "WHERE deleted = false " );
+
+		StringBuffer countBufferSQL = new StringBuffer();
+		countBufferSQL.append( "SELECT COUNT( * ) FROM t_order as `order` " );
+
+		countBufferSQL.append( "WHERE deleted = false " );
 		if ( review.getAssignShopId() != null )
 		{
 			bufferSQL.append( "AND `order`.shop_id = ?1 " );
@@ -1159,13 +1164,23 @@ public class OrderService
 				"		SELECT id FROM `t_shop` WHERE id = `order`.shop_id " +
 				"		AND deploy_process_step_id IN ( SELECT step_id FROM t_object_process" +
 				"		WHERE object_id = `order`.id AND object_type = 1 ) )" );
+
+			countBufferSQL.append( "AND `order`.shop_id = ?1 " );
+			countBufferSQL.append( "AND `order`.shop_id = ( " +
+				"		SELECT id FROM `t_shop` WHERE id = `order`.shop_id " +
+				"		AND deploy_process_step_id IN ( SELECT step_id FROM t_object_process" +
+				"		WHERE object_id = `order`.id AND object_type = 1 ) )" );
 		}
+		System.out.println( "review.getShowDeployedOrders(): " + review.getShowDeployedOrders() );
 		if ( review.getShowDeployedOrders() == null || ! review.getShowDeployedOrders() )
 		{
 			/**
 			 * 取得未生成发货单的订单
 			 */
 			bufferSQL.append(
+				"AND `order`.id NOT IN( SELECT DISTINCT( order_id ) FROM t_shipment WHERE ship_status IN( 1, 2, 7 ) ) " );
+
+			countBufferSQL.append(
 				"AND `order`.id NOT IN( SELECT DISTINCT( order_id ) FROM t_shipment WHERE ship_status IN( 1, 2, 7 ) ) " );
 		}
 		else
@@ -1174,31 +1189,45 @@ public class OrderService
 			 * 取得已生成发货单的订单
 			 */
 			bufferSQL.append(
-				"OR `order`.id IN( SELECT DISTINCT( order_id ) FROM t_shipment WHERE ship_status IN( 1, 2, 7 ) ) " );
+				"AND `order`.id IN( SELECT DISTINCT( order_id ) FROM t_shipment WHERE ship_status IN( 1, 2, 7 ) ) " );
+
+			countBufferSQL.append(
+				"AND `order`.id IN( SELECT DISTINCT( order_id ) FROM t_shipment WHERE ship_status IN( 1, 2, 7 ) ) " );
 		}
 		if ( review.getAssignDeliveryMethod() != null )
 		{
 			bufferSQL.append( "AND `order`.delivery_method = ?2 " );
+
+			countBufferSQL.append( "AND `order`.delivery_method = ?2 " );
 		}
 		if ( review.getAssignShippingDescription() != null )
 		{
 			bufferSQL.append( "AND `order`.shipping_description LIKE ?3 " );
+
+			countBufferSQL.append( "AND `order`.shipping_description LIKE ?3 " );
 		}
 		bufferSQL.append( "LIMIT ?4, ?5" );
 
 		Query query = em.createNativeQuery( bufferSQL.toString(), Order.class );
+		Query queryCount = em.createNativeQuery( countBufferSQL.toString() );
 		if ( review.getAssignShopId() != null )
 		{
 			query.setParameter( 1, review.getAssignShopId() );
+			queryCount.setParameter( 1, review.getAssignShopId() );
 		}
 		if ( review.getAssignDeliveryMethod() != null )
 		{
 			query.setParameter( 2, review.getAssignDeliveryMethod() );
+			queryCount.setParameter( 2, review.getAssignDeliveryMethod() );
 		}
 		if ( review.getAssignShippingDescription() != null )
 		{
 			query.setParameter( 3, "%" + review.getAssignShippingDescription() + "%" );
+			queryCount.setParameter( 3, "%" + review.getAssignShippingDescription() + "%" );
 		}
+		BigInteger totalElements = ( BigInteger ) queryCount.getSingleResult();
+		review.setTotalElements( totalElements );
+
 		query.setParameter( 4,
 			( pageable.getPageNumber() <= 1 ? 0 : pageable.getPageNumber() - 1 ) * pageable.getPageSize() );
 		query.setParameter( 5, pageable.getPageSize() );

@@ -1,7 +1,7 @@
 angular.module('ecommApp')
 
-.controller('ShipmentController', ['$scope', '$rootScope', 'toastr', 'Warehouse', 'Shop', 'courierService', 'Utils', 'shipmentService', 'Auth',
-    function($scope, $rootScope, toastr, Warehouse, Shop, courierService, Utils, shipmentService, Auth) {
+.controller('ShipmentController', ['$scope', '$rootScope', '$window', 'toastr', 'Warehouse', 'Shop', 'courierService', 'Utils', 'shipmentService', 'Auth',
+    function($scope, $rootScope, $window, toastr, Warehouse, Shop, courierService, Utils, shipmentService, Auth) {
 
         /** 如果编辑了任何信息，则切换数据时提示操作员［确定取消当前所有操作？］
          */
