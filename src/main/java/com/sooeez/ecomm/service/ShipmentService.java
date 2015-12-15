@@ -38,6 +38,7 @@ import com.sooeez.ecomm.domain.Shop;
 import com.sooeez.ecomm.dto.OperationReviewDTO;
 import com.sooeez.ecomm.dto.OperationReviewShipmentDTO;
 import com.sooeez.ecomm.repository.ObjectProcessRepository;
+import com.sooeez.ecomm.repository.OrderItemRepository;
 import com.sooeez.ecomm.repository.OrderRepository;
 import com.sooeez.ecomm.repository.ShipmentItemRepository;
 import com.sooeez.ecomm.repository.ShipmentRepository;
@@ -52,6 +53,8 @@ public class ShipmentService
 	private ShopRepository			shopRepository;
 	@Autowired
 	private OrderRepository			orderRepository;
+	@Autowired
+	private OrderItemRepository		orderItemRepository;
 	@Autowired
 	private ShipmentRepository		shipmentRepository;
 	@Autowired
@@ -128,22 +131,33 @@ public class ShipmentService
 					/* 更新订单状态至：店铺的完成状态 */
 					Order order = this.orderRepository.findOne( shipment.getOrderId() );
 
-					System.out.println( "this.shipmentRepository.getQtyShippedSumByOrderId( order.getId() ): " +
-						this.shipmentRepository.getQtyShippedSumByOrderId( order.getId() ) );
-
-					Integer qtyTotalRecentDispatched = order.getQtyTotalItemShipped() +
-						shipment.getQtyTotalItemShipped();
+					int qtyTotalItemShipped = this.shipmentRepository.getQtyShippedSumByOrderId( order.getId() );
 
 					/* 更新订单的［运送数量］ */
-					this.orderRepository.updateQtyTotalItemShipped( qtyTotalRecentDispatched, order.getId() );
+					this.orderRepository.updateQtyTotalItemShippedById( qtyTotalItemShipped, order.getId() );
 
 					/* 如果［当前总发货数量］大于等于［订购数量］ */
-					if( qtyTotalRecentDispatched >= order.getQtyTotalItemOrdered() )
+					if( qtyTotalItemShipped >= order.getQtyTotalItemOrdered() )
 					{
 						Long stepId = order.getShop().getCompleteStep().getId();
 						Long processId = order.getShop().getCompleteStep().getProcessId();
 						Integer objectType = order.getShop().getCompleteStep().getType();
 						this.objectProcessRepository.updateStepId( stepId, order.getId(), processId, objectType );
+					}
+
+					/*
+					 * 如果有订单详情，则需要更新订单详情的发货数量
+					 */
+					if( order.getItems() != null && order.getItems().size() > 0 )
+					{
+						for( OrderItem orderItem : order.getItems() )
+						{
+							int qtyShipped = this.shipmentItemRepository
+								.getQtyShippedSumByOrderItemId( orderItem.getId() );
+
+							this.orderItemRepository.updateQtyShippedById( qtyShipped, orderItem.getId() );
+
+						}
 					}
 				}
 			}
@@ -673,7 +687,7 @@ public class ShipmentService
 			Integer qtyTotalRecentDispatched = order.getQtyTotalItemShipped() + shipment.getQtyTotalItemShipped();
 
 			/* 更新订单的［运送数量］ */
-			this.orderRepository.updateQtyTotalItemShipped( qtyTotalRecentDispatched, order.getId() );
+			this.orderRepository.updateQtyTotalItemShippedById( qtyTotalRecentDispatched, order.getId() );
 
 			/* 如果［当前总发货数量］大于等于［订购数量］ */
 			if( qtyTotalRecentDispatched >= order.getQtyTotalItemOrdered() )

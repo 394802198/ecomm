@@ -1,7 +1,7 @@
 angular.module('ecommApp')
 
-.controller('ShipmentController', ['$scope', '$rootScope', '$window', 'toastr', 'Warehouse', 'Shop', 'courierService', 'Utils', 'shipmentService', 'Auth',
-    function($scope, $rootScope, $window, toastr, Warehouse, Shop, courierService, Utils, shipmentService, Auth) {
+.controller('ShipmentController', ['$scope', '$rootScope', '$window', '$state', '$timeout', 'toastr', 'Warehouse', 'Shop', 'courierService', 'Utils', 'shipmentService', 'Auth',
+    function($scope, $rootScope, $window, $state, $timeout, toastr, Warehouse, Shop, courierService, Utils, shipmentService, Auth) {
 
         /** 如果编辑了任何信息，则切换数据时提示操作员［确定取消当前所有操作？］
          */
@@ -277,6 +277,10 @@ angular.module('ecommApp')
                     }
                 }
             }
+
+            $timeout(function(){
+                $state.reload();
+            }, 300);
 
             toastr.success('切换状态至［' + $scope.targetStatusStr + '］');
         };

@@ -16,5 +16,5 @@ public interface ShipmentRepository extends JpaRepository< Shipment, Long >, Jpa
 	int updateShipStatus( Integer shipStatus, Long id );
 
 	@Query( "SELECT SUM( s.qtyTotalItemShipped ) FROM Shipment s WHERE s.orderId = ?1" )
-	Long getQtyShippedSumByOrderId( Long orderId );
+	int getQtyShippedSumByOrderId( Long orderId );
 }
