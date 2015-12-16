@@ -42,8 +42,8 @@
                     <th width="2%">
                         <input type="checkbox" name="purchaseOrderDeliveryId" ng-model="isCheckedAll" ng-click="checkAllPurchaseOrders()">
                     </th>
-                    <th width="10%">采购仓库</th>
                     <th width="10%">采购单号</th>
+                    <th width="10%">采购商</th>
                     <th width="34%">采购商品</th>
                     <th width="34%">收货单信息</th>
                     <th width="10%" style="padding: 2px">
@@ -60,21 +60,25 @@
                         <input type="checkbox" ng-model="purchaseOrder.isSelected">
                     </td>
                     <td>
-                        {{purchaseOrder.shop.name}}
+                        <strong>{{purchaseOrder.id}}</strong>
                     </td>
                     <td>
-                        <strong>{{purchaseOrder.id}}</strong>
+                        <strong>{{purchaseOrder.supplier.name}}</strong>
                     </td>
                     <td>
                         <table class="table table-condensed">
                             <thead>
                             <tr>
+                                <th class="text-center">Sku</th>
                                 <th class="text-center">商品名称</th>
                                 <th class="text-center">采购数量</th>
                             </tr>
                             </thead>
                             <tbody>
                                 <tr ng-repeat="item in purchaseOrder.items | orderBy: ['supplierProduct.supplierProductName', 'supplierProduct.product.name']"  class="text-center">
+                                    <td>
+                                        {{ item.supplierProduct.product ? item.supplierProduct.product.sku : item.supplierProduct.externalSku }}
+                                    </td>
                                     <td>
                                         {{ item.supplierProduct.product ? item.supplierProduct.product.name : item.supplierProduct.supplierProductName }}
                                     </td>

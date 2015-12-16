@@ -26,6 +26,17 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
 
     Currency.getAll().then(function(currencies) {
         $scope.currencies = currencies;
+
+        if( $scope.currencies )
+        {
+            for( var currencyIndex in $scope.currencies )
+            {
+                if( $scope.currencies[ currencyIndex].id === 100 )
+                {
+                    $scope.purchaseOrder.currency = $scope.currencies[ currencyIndex ];
+                }
+            }
+        }
     });
 
     Supplier.getAll({
@@ -65,8 +76,6 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
     }
 
     $scope.save = function(purchaseOrder, formValid) {
-
-        console.log( purchaseOrder );
 
         var isQualified = true;
 
@@ -117,9 +126,6 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
         /* 如果验证全部通过 */
         if( isQualified )
         {
-            //console.clear();
-            console.log('[' + $scope.action + '] save purchaseOrder');
-            console.log(purchaseOrder);
 
             refreshField(purchaseOrder);
 
@@ -232,7 +238,8 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
             receiveMobile       :   '027 652 8888',
             receiveEmail        :   'candy@mdd.co.nz',
             receiveAddress      :   'Magic Group Ltd (MDD).   Unit 1, 48 Ellice Road, Wairau Valley, Auckland',
-            deliverAttention    :   'Please Deliver between 11am~7pm.   Thanks for your help  :)'
+            deliverAttention    :   'Please Deliver between 11am~7pm.   Thanks for your help  :)',
+            bookingType         :   { name:'电话', value:2 }
         };
 
         $timeout(function()
@@ -300,8 +307,6 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
      */
     if( $stateParams.purchasedProducts && $stateParams.purchasedProducts.length > 0 )
     {
-        console.log( '$stateParams.purchasedProducts: ' );
-        console.log( $stateParams.purchasedProducts );
         var purchasedProductsStr = $stateParams.purchasedProducts.split(';');
         var finalPurchasedProducts = [];
         for( var purchasedProductsStrIndex in purchasedProductsStr )
@@ -333,28 +338,24 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
 
             $timeout(function()
             {
-                $.each( $scope.supplierProducts, function()
+                $.each( finalPurchasedProducts, function()
                 {
-                    var supplierProduct = this;
-                    $.each( finalPurchasedProducts, function()
+                    var This = this;
+                    if( This.sku )
                     {
-                        if( this.purchaseQty && supplierProduct.product && this.sku === supplierProduct.product.sku )
+                        supplierProductService.getByProductSkuAndSupplierId( this.sku, $scope.purchaseOrder.supplier.id).then(function( supplierProduct )
                         {
-                            supplierProduct.purchaseQty = this.purchaseQty;
                             var item =
                             {
                                 supplierProduct : supplierProduct,
-                                purchaseQty : supplierProduct.purchaseQty,
-                                estimatePurchaseUnitPrice : supplierProduct.defaultPurchasePrice
+                                purchaseQty : This.purchaseQty,
+                                estimatePurchaseUnitPrice : Number( supplierProduct.defaultPurchasePrice).toFixed( 2 )
                             };
                             $scope.purchaseOrder.items.push( item );
-                        }
-                    });
+                        });
+                    }
                 });
             }, 300);
-
-            console.log( '$scope.purchaseOrder: ' );
-            console.log( $scope.purchaseOrder );
 
         }, 200);
     }

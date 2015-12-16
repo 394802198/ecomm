@@ -14,6 +14,15 @@ angular.module('ecommApp')
             });
         };
 
+        supplierProduct.getByProductSkuAndSupplierId = function( sku, supplierId )
+        {
+            console.log( 'sku: ' + sku );
+            console.log( 'supplierId: ' + supplierId );
+            return $http.get( '/api/supplierproducts/by_sku_and_supplier_id/' + sku + '/' + supplierId ).then(function(res) {
+                return res.data;
+            });
+        };
+
         supplierProduct.checkUniqueSupplierProductCode = function( params )
         {
             return $http.get('/api/supplierproducts/check-unique', {
