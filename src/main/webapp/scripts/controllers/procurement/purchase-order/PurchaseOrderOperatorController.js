@@ -405,8 +405,10 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
             {
                 for( var itemIndex in items )
                 {
-                    totalPurchasedQty += items[itemIndex].purchaseQty;
-                    totalEstimatePurchasedAmount += ( items[itemIndex].purchaseQty * items[itemIndex].estimatePurchaseUnitPrice );
+                    var purchaseQty = Number( items[itemIndex].purchaseQty );
+                    var estimatePurchaseUnitPrice = Number( items[itemIndex].estimatePurchaseUnitPrice );
+                    totalPurchasedQty += purchaseQty;
+                    totalEstimatePurchasedAmount += ( purchaseQty * estimatePurchaseUnitPrice );
                 }
                 $scope.purchaseOrder.totalPurchasedQty = totalPurchasedQty;
                 $scope.purchaseOrder.totalEstimatePurchasedAmount = totalEstimatePurchasedAmount;
