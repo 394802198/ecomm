@@ -16,8 +16,9 @@ angular.module('ecommApp')
         }];
 
         $scope.defautlQuery = {
+            page: 0,
             size: 50,
-            sort: ['createTime,desc', 'id,desc'],
+            sort: ['lastTime,desc', 'id,desc'],
             warehouse: undefined,
             product: {
                 sku: '',
@@ -40,9 +41,9 @@ angular.module('ecommApp')
             $scope.warehouses = warehouses;
         });
 
-        $scope.searchData = function(query, number) {
+        $scope.searchData = function(query) {
             InventoryBatchItem.get({
-                page: number ? number : 0,
+                page: query.page,
                 size: query.size,
                 sort: query.sort,
                 productSKU: query.product.sku,
@@ -57,17 +58,10 @@ angular.module('ecommApp')
                 $.each(page.content, function() {
                     this.inventorySnapshot = angular.fromJson(this.inventorySnapshot);
                 });
-                Utils.initList(page, query);
             });
         };
 
         $scope.searchData($scope.query);
-
-        $scope.turnPage = function(number) {
-            if (number > -1 && number < $scope.page.totalPages) {
-                $scope.searchData($scope.query, number);
-            }
-        };
 
         $scope.search = function(query) {
             $scope.searchData(query);

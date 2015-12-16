@@ -12,4 +12,8 @@ public interface InventoryBatchItemRepository extends JpaRepository<InventoryBat
 	@Modifying
 	@Query("update InventoryBatchItem set batchType = ?1 where inventoryBatchId = ?2")
 	void updateBatchTypeByBatchId(Integer batchType, Long batchId);
+	
+	@Modifying
+	@Query("update InventoryBatchItem set outBatchId = ?1 where inventoryBatchId = ?2")
+	void updateOutBatchId(Long outBatchId, Long batchId);
 }

@@ -229,6 +229,14 @@ public class InventoryBatchService {
 			}
 			
 			batchRepository.save(batch);
+			
+			// 如果是具有临时采购性质的入库操作，需要修改出库细目上的出库单
+			if (batch.getPurchaseBatchId() != null) {
+				System.out.println("如果是具有临时采购性质的入库操作，需要修改出库细目上的出库单");
+				System.out.println("batch.getPurchaseBatchId(): " + batch.getPurchaseBatchId());
+				System.out.println("batch.getId(): " + batch.getId());
+				itemRepository.updateOutBatchId(batch.getId(), batch.getPurchaseBatchId());
+			}
 
 			batch.getItems().forEach(item -> {
 
