@@ -5,6 +5,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.sooeez.ecomm.domain.PurchaseOrder;
 
-public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long>, JpaSpecificationExecutor<PurchaseOrder> {
-
-}
+public interface PurchaseOrderRepository extends JpaRepository< PurchaseOrder, Long >, JpaSpecificationExecutor< PurchaseOrder >
+{}

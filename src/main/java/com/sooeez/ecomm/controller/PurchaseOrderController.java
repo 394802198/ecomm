@@ -26,142 +26,156 @@ import com.sooeez.ecomm.dto.PageDTO;
 import com.sooeez.ecomm.service.PurchaseOrderService;
 
 @RestController
-@RequestMapping("/api")
-public class PurchaseOrderController {
-	
-	@Autowired private PurchaseOrderService purchaseOrderService;
-	
+@RequestMapping( "/api" )
+public class PurchaseOrderController
+{
+
+	@Autowired
+	private PurchaseOrderService purchaseOrderService;
+
 	/*
 	 * PurchaseOrder
 	 */
-	
-	@RequestMapping(value = "/purchaseorders/{id}")
-	public PurchaseOrder getPurchaseOrder(@PathVariable("id") Long id) {
-		return this.purchaseOrderService.getPurchaseOrder(id);
+
+	@RequestMapping( value = "/purchaseorders/{id}" )
+	public PurchaseOrder getPurchaseOrder( @PathVariable( "id" ) Long id)
+	{
+		return this.purchaseOrderService.getPurchaseOrder( id );
 	}
-	
-	@RequestMapping(value = "/purchaseorders")
-	public PageDTO<PurchaseOrder> getPagedPurchaseOrders(PurchaseOrder purchaseOrder, Pageable pageable) {
-		Page<PurchaseOrder> page = this.purchaseOrderService.getPagedPurchaseOrders( purchaseOrder, pageable );
-		PageDTO<PurchaseOrder> pageDTO = new PageDTO<>();
+
+	@RequestMapping( value = "/purchaseorders" )
+	public PageDTO< PurchaseOrder > getPagedPurchaseOrders( PurchaseOrder purchaseOrder, Pageable pageable )
+	{
+		Page< PurchaseOrder > page = this.purchaseOrderService.getPagedPurchaseOrders( purchaseOrder, pageable );
+		PageDTO< PurchaseOrder > pageDTO = new PageDTO< >();
 		BeanUtils.copyProperties( page, pageDTO, "content", "sort" );
-		List<PurchaseOrder> fpos = new ArrayList<>();
-		page.getContent().forEach( opo ->
+		List< PurchaseOrder > fpos = new ArrayList< >();
+		page.getContent().forEach( po ->
 		{
 			PurchaseOrder fpo = new PurchaseOrder();
-			BeanUtils.copyProperties( opo, fpo, "purchaseOrderDeliveries", "items" );
+
+			if( po.getItems() != null && po.getItems().size() > 0 )
+			{
+				List< PurchaseOrderItem > fpois = new ArrayList< PurchaseOrderItem >();
+				for( PurchaseOrderItem poi : po.getItems() )
+				{
+					PurchaseOrderItem fpoi = new PurchaseOrderItem();
+					fpoi.setSupplierProduct( poi.getSupplierProduct() );
+					fpoi.setPurchaseQty( poi.getPurchaseQty() );
+
+					fpois.add( fpoi );
+				}
+
+				fpo.setItems( fpois );
+			}
+
+			BeanUtils.copyProperties( po, fpo, "purchaseOrderDeliveries" );
 			fpos.add( fpo );
-//			Product productDTO = new Product();
-//			productDTO.setId(p.getId());
-//			productDTO.setSku(p.getSku());
-//			productDTO.setName(p.getName());
-//			productDTO.setProcesses(p.getProcesses());
-//			productDTO.setWarehouses(p.getWarehouses());
-//			
-//			productDTO.setPriceL1(p.getPriceL1());
-//			productDTO.setPriceL2(p.getPriceL2());
-//			productDTO.setPriceL3(p.getPriceL3());
-//			productDTO.setPriceL4(p.getPriceL4());
-//			productDTO.setPriceL5(p.getPriceL5());
-//			productDTO.setPriceL6(p.getPriceL6());
-//			productDTO.setPriceL7(p.getPriceL7());
-//			productDTO.setPriceL8(p.getPriceL8());
-//			productDTO.setPriceL9(p.getPriceL9());
-//			productDTO.setPriceL10(p.getPriceL10());
-//			productDTO.setWeight(p.getWeight());
-			
-//			fpos.add( productDTO );
-		});
+		} );
 		pageDTO.setContent( fpos );
 		return pageDTO;
 	}
-	
-//	@RequestMapping(value = "/purchaseOrders/confirm/shipment")
-//	public OperationReviewDTO confirmOrderWhenGenerateShipment(@RequestBody OperationReviewDTO review) {
-//		return this.orderService.confirmOrderWhenGenerateShipment(review);
-//	}
-	
-	@RequestMapping(value = "/purchaseorders/get/all")
-	public List<PurchaseOrder> getPurchaseOrders(PurchaseOrder purchaseOrder, Sort sort) {
-		return this.purchaseOrderService.getPurchaseOrders(purchaseOrder, sort);
+
+	// @RequestMapping(value = "/purchaseOrders/confirm/shipment")
+	// public OperationReviewDTO confirmOrderWhenGenerateShipment(@RequestBody
+	// OperationReviewDTO review) {
+	// return this.orderService.confirmOrderWhenGenerateShipment(review);
+	// }
+
+	@RequestMapping( value = "/purchaseorders/get/all" )
+	public List< PurchaseOrder > getPurchaseOrders( PurchaseOrder purchaseOrder, Sort sort )
+	{
+		return this.purchaseOrderService.getPurchaseOrders( purchaseOrder, sort );
 	}
-	
-	@RequestMapping(value = "/purchaseorders", method = RequestMethod.POST)
-	public PurchaseOrder savePurchaseOrder(@RequestBody PurchaseOrder purchaseOrder, @RequestParam String action, HttpServletRequest request) {
-		return this.purchaseOrderService.savePurchaseOrder(purchaseOrder);
+
+	@RequestMapping( value = "/purchaseorders", method = RequestMethod.POST )
+	public PurchaseOrder savePurchaseOrder(
+		@RequestBody PurchaseOrder purchaseOrder, @RequestParam String action, HttpServletRequest request )
+	{
+		return this.purchaseOrderService.savePurchaseOrder( purchaseOrder );
 	}
-	
-	@RequestMapping(value = "/savePurchaseOrders", method = RequestMethod.POST)
-	public List<PurchaseOrder> savePurchaseOrders(@RequestBody PurchaseOrder purchaseOrders) {
+
+	@RequestMapping( value = "/savePurchaseOrders", method = RequestMethod.POST )
+	public List< PurchaseOrder > savePurchaseOrders( @RequestBody PurchaseOrder purchaseOrders )
+	{
 		return purchaseOrderService.savePurchaseOrders( purchaseOrders );
 	}
-	
-	@RequestMapping(value = "/purchaseorders/{id}", method = RequestMethod.DELETE)
-	public ResponseEntity<?> deletePurchaseOrder(@PathVariable("id") Long id) {
-		this.purchaseOrderService.deletePurchaseOrder(id);
-		return new ResponseEntity<>(HttpStatus.OK);
+
+	@RequestMapping( value = "/purchaseorders/{id}", method = RequestMethod.DELETE )
+	public ResponseEntity< ? > deletePurchaseOrder( @PathVariable( "id" ) Long id)
+	{
+		this.purchaseOrderService.deletePurchaseOrder( id );
+		return new ResponseEntity< >( HttpStatus.OK );
 	}
-	
-	
+
 	/*
 	 * PurchaseOrderItem
 	 */
-	
-	@RequestMapping(value = "/purchaseorderitems/{id}")
-	public PurchaseOrderItem getPurchaseOrderItem(@PathVariable("id") Long id) {
-		return this.purchaseOrderService.getPurchaseOrderItem(id);
+
+	@RequestMapping( value = "/purchaseorderitems/{id}" )
+	public PurchaseOrderItem getPurchaseOrderItem( @PathVariable( "id" ) Long id)
+	{
+		return this.purchaseOrderService.getPurchaseOrderItem( id );
 	}
-	
-	@RequestMapping(value = "/purchaseorderitems")
-	public Page<PurchaseOrderItem> getPagedPurchaseOrderItems(Pageable pageable) {
-		return this.purchaseOrderService.getPagedPurchaseOrderItems(pageable);
+
+	@RequestMapping( value = "/purchaseorderitems" )
+	public Page< PurchaseOrderItem > getPagedPurchaseOrderItems( Pageable pageable )
+	{
+		return this.purchaseOrderService.getPagedPurchaseOrderItems( pageable );
 	}
-	
-	@RequestMapping(value = "/purchaseorderitems/get/all")
-	public List<PurchaseOrderItem> getPurchaseOrderItems(Sort sort) {
-		return this.purchaseOrderService.getPurchaseOrderItems(sort);
+
+	@RequestMapping( value = "/purchaseorderitems/get/all" )
+	public List< PurchaseOrderItem > getPurchaseOrderItems( Sort sort )
+	{
+		return this.purchaseOrderService.getPurchaseOrderItems( sort );
 	}
-	
-	@RequestMapping(value = "/purchaseorderitems", method = RequestMethod.POST)
-	public PurchaseOrderItem savePurchaseOrderItem(@RequestBody PurchaseOrderItem purchaseOrderItem) {
-		return this.purchaseOrderService.savePurchaseOrderItem(purchaseOrderItem);
+
+	@RequestMapping( value = "/purchaseorderitems", method = RequestMethod.POST )
+	public PurchaseOrderItem savePurchaseOrderItem( @RequestBody PurchaseOrderItem purchaseOrderItem )
+	{
+		return this.purchaseOrderService.savePurchaseOrderItem( purchaseOrderItem );
 	}
-	
-	@RequestMapping(value = "/purchaseorderitems/{id}", method = RequestMethod.DELETE)
-	public ResponseEntity<?> deletePurchaseOrderItem(@PathVariable("id") Long id) {
-		this.purchaseOrderService.deletePurchaseOrderItem(id);
-		return new ResponseEntity<>(HttpStatus.OK);
+
+	@RequestMapping( value = "/purchaseorderitems/{id}", method = RequestMethod.DELETE )
+	public ResponseEntity< ? > deletePurchaseOrderItem( @PathVariable( "id" ) Long id)
+	{
+		this.purchaseOrderService.deletePurchaseOrderItem( id );
+		return new ResponseEntity< >( HttpStatus.OK );
 	}
-	
-	
+
 	/*
 	 * SupplierProductCodeMap
 	 */
-	
-	@RequestMapping(value = "/supplierproductcodemaps/{id}")
-	public SupplierProduct getSupplierProduct(@PathVariable("id") Long id) {
-		return this.purchaseOrderService.getSupplierProduct(id);
+
+	@RequestMapping( value = "/supplierproductcodemaps/{id}" )
+	public SupplierProduct getSupplierProduct( @PathVariable( "id" ) Long id)
+	{
+		return this.purchaseOrderService.getSupplierProduct( id );
 	}
-	
-	@RequestMapping(value = "/supplierproductcodemaps")
-	public Page<SupplierProduct> getPagedSupplierProducts(Pageable pageable) {
-		return this.purchaseOrderService.getPagedSupplierProducts(pageable);
+
+	@RequestMapping( value = "/supplierproductcodemaps" )
+	public Page< SupplierProduct > getPagedSupplierProducts( Pageable pageable )
+	{
+		return this.purchaseOrderService.getPagedSupplierProducts( pageable );
 	}
-	
-	@RequestMapping(value = "/supplierproductcodemaps/get/all")
-	public List<SupplierProduct> getSupplierProducts(Sort sort) {
-		return this.purchaseOrderService.getSupplierProducts(sort);
+
+	@RequestMapping( value = "/supplierproductcodemaps/get/all" )
+	public List< SupplierProduct > getSupplierProducts( Sort sort )
+	{
+		return this.purchaseOrderService.getSupplierProducts( sort );
 	}
-	
-	@RequestMapping(value = "/supplierproductcodemaps", method = RequestMethod.POST)
-	public SupplierProduct saveSupplierProduct(@RequestBody SupplierProduct supplierProduct) {
-		return this.purchaseOrderService.saveSupplierProduct(supplierProduct);
+
+	@RequestMapping( value = "/supplierproductcodemaps", method = RequestMethod.POST )
+	public SupplierProduct saveSupplierProduct( @RequestBody SupplierProduct supplierProduct )
+	{
+		return this.purchaseOrderService.saveSupplierProduct( supplierProduct );
 	}
-	
-	@RequestMapping(value = "/supplierproductcodemaps/{id}", method = RequestMethod.DELETE)
-	public ResponseEntity<?> deleteSupplierProduct(@PathVariable("id") Long id) {
-		this.purchaseOrderService.deleteSupplierProduct(id);
-		return new ResponseEntity<>(HttpStatus.OK);
+
+	@RequestMapping( value = "/supplierproductcodemaps/{id}", method = RequestMethod.DELETE )
+	public ResponseEntity< ? > deleteSupplierProduct( @PathVariable( "id" ) Long id)
+	{
+		this.purchaseOrderService.deleteSupplierProduct( id );
+		return new ResponseEntity< >( HttpStatus.OK );
 	}
-	
+
 }
