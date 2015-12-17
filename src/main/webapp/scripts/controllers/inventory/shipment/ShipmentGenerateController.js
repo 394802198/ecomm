@@ -511,31 +511,6 @@ angular.module('ecommApp')
             }
         };
 
-        $scope.shipmentCouriers = [];
-        $scope.shipmentCourierPrintSlideChecked = false;
-        /** 打印快递单
-         */
-        $scope.toggleShipmentCourierPrintSlide = function()
-        {
-            $scope.shipmentCourierPrintSlideChecked = ! $scope.shipmentCourierPrintSlideChecked;
-
-            /* 如果打开弹出层，则显示弹出层滚动条并隐藏body滚动条，反之亦然 */
-            if( $scope.shipmentCourierPrintSlideChecked )
-            {
-                $scope.shipmentCouriers = angular.copy( $scope.shipments );
-
-                $('body').css('overflow','hidden');
-                $('[ps-open="shipmentCourierPrintSlideChecked"]').css('overflow','auto');
-                toastr.success('快递单准备就绪，可以进行打印操作');
-            }
-            else
-            {
-                $('body').css('overflow','auto');
-                $('[ps-open="shipmentCourierPrintSlideChecked"]').css('overflow','hidden');
-            }
-        };
-
-
         function executeShipmentOperationReview( action )
         {
             var data = {

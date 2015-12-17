@@ -87,23 +87,23 @@ public class OrderService
 	public Order saveOrder( Order order )
 	{
 		/* If id not null then is edit action */
-		if ( order.getId() == null )
+		if( order.getId() == null )
 		{
 			Process processQuery = new Process();
 			processQuery.setObjectType( 1 );
 			processQuery.setEnabled( true );
 			List< Process > processes = processService.getProcesses( processQuery, null );
-			if ( processes != null && processes.size() > 0 )
+			if( processes != null && processes.size() > 0 )
 			{
-				for ( Process process : processes )
+				for( Process process : processes )
 				{
-					if ( process.getAutoApply() == true )
+					if( process.getAutoApply() == true )
 					{
 						ObjectProcess objectProcess = new ObjectProcess();
 						objectProcess.setObjectType( 1 );
 						objectProcess.setProcess( process );
 						ProcessStep step = new ProcessStep();
-						if ( process.getDefaultStepId() != null )
+						if( process.getDefaultStepId() != null )
 						{
 							step.setId( process.getDefaultStepId() );
 						}
@@ -130,22 +130,22 @@ public class OrderService
 		BigDecimal tax = new BigDecimal( 0 );
 
 		/* If order items is not empty then handle some operation */
-		if ( order.getItems() != null && order.getItems().size() > 0 )
+		if( order.getItems() != null && order.getItems().size() > 0 )
 		{
 
-			for ( OrderItem orderItem : order.getItems() )
+			for( OrderItem orderItem : order.getItems() )
 			{
-				if ( orderItem.getQtyOrdered() != null && orderItem.getUnitWeight() != null )
+				if( orderItem.getQtyOrdered() != null && orderItem.getUnitWeight() != null )
 				{
 					/* Accumulate total weight */
 					weight += orderItem.getQtyOrdered() * orderItem.getUnitWeight();
 				}
-				if ( orderItem.getQtyOrdered() != null )
+				if( orderItem.getQtyOrdered() != null )
 				{
 					/* Accumulate total items ordered */
 					qtyTotalItemOrdered += orderItem.getQtyOrdered();
 				}
-				if ( orderItem.getQtyOrdered() != null && orderItem.getUnitPrice() != null )
+				if( orderItem.getQtyOrdered() != null && orderItem.getUnitPrice() != null )
 				{
 					/* Accumulate grand total */
 					grandTotal = grandTotal
@@ -159,11 +159,11 @@ public class OrderService
 				}
 			}
 
-			if ( order.getShippingFee() != null )
+			if( order.getShippingFee() != null )
 			{
 				grandTotal = grandTotal.add( order.getShippingFee() );
 			}
-			if ( order.getSubtotal() != null )
+			if( order.getSubtotal() != null )
 			{
 				/* *3/23 */
 				tax = order.getSubtotal().multiply( new BigDecimal( 3 ) ).divide( new BigDecimal( 23 ), 2,
@@ -210,7 +210,7 @@ public class OrderService
 		findAvailableDeployOrder( order );
 
 		Page< Order > page = this.orderRepository.findAll( getOrderSpecification( order ), pageable );
-		if ( page != null && page.getContent() != null && page.getContent().size() > 0 && assginWarehouseId > 0 )
+		if( page != null && page.getContent() != null && page.getContent().size() > 0 && assginWarehouseId > 0 )
 		{
 			filterItemsForOrder( page.getContent(), assginWarehouseId );
 		}
@@ -224,7 +224,7 @@ public class OrderService
 			"t_order_item as orderItem, " + "t_object_process as process, " + "t_shop as shop " +
 			"where `order`.id = orderItem.order_id " + "and `order`.id = process.object_id " +
 			"and process.object_type = 1 " + "and `order`.shop_id = shop.id ";
-		if ( order.getAction() != null && order.getAction().indexOf( "getOrderedQty" ) > - 1 )
+		if( order.getAction() != null && order.getAction().indexOf( "getOrderedQty" ) > - 1 )
 		{
 			sqlString += "and (shop.init_process_step_id = process.step_id " +
 				"or shop.deploy_process_step_id = process.step_id " +
@@ -235,54 +235,54 @@ public class OrderService
 			sqlString += "and shop.deploy_process_step_id = process.step_id ";
 		}
 		sqlString += "and `order`.deleted = 0 ";
-		if ( order.getInternalCreateTimeStart() != null && order.getInternalCreateTimeEnd() != null )
+		if( order.getInternalCreateTimeStart() != null && order.getInternalCreateTimeEnd() != null )
 		{
 			sqlString += "and `order`.internal_create_time between '" +
 				order.getInternalCreateTimeStart() + "' " + "and '" + order.getInternalCreateTimeEnd() + "'";
 			order.setInternalCreateTimeStart( null );
 			order.setInternalCreateTimeEnd( null );
 		}
-		else if ( order.getInternalCreateTimeStart() != null )
+		else if( order.getInternalCreateTimeStart() != null )
 		{
 			sqlString += " and `order`.internal_create_time >= '" + order.getInternalCreateTimeStart() + "'";
 			order.setInternalCreateTimeStart( null );
 		}
-		else if ( order.getInternalCreateTimeEnd() != null )
+		else if( order.getInternalCreateTimeEnd() != null )
 		{
 			sqlString += " and `order`.internal_create_time <= '" + order.getInternalCreateTimeEnd() + "'";
 			order.setInternalCreateTimeEnd( null );
 		}
-		if ( order.getShopId() != null )
+		if( order.getShopId() != null )
 		{
 			sqlString += " and `order`.shop_id = " + order.getShopId();
 			order.setShopId( null );;
 		}
-		else if ( order.getShopIds() != null && order.getShopIds().length > 0 )
+		else if( order.getShopIds() != null && order.getShopIds().length > 0 )
 		{
 			String shopIds = "";
-			for ( int i = 0, len = order.getShopIds().length; i < len - 1; i++ )
+			for( int i = 0, len = order.getShopIds().length; i < len - 1; i++ )
 			{
 				shopIds += order.getShopIds()[ 0 ] + ",";
 			}
 			shopIds += order.getShopIds()[ order.getShopIds().length - 1 ];
 			sqlString += " and `order`.shop_id in(" + shopIds + ")";
 		}
-		if ( StringUtils.hasText( order.getExternalSn() ) )
+		if( StringUtils.hasText( order.getExternalSn() ) )
 		{
 			sqlString += " and `order`.external_sn like '%" + order.getExternalSn() + "%'";
 			order.setExternalSn( null );
 		}
-		if ( StringUtils.hasText( order.getReceiveName() ) )
+		if( StringUtils.hasText( order.getReceiveName() ) )
 		{
 			sqlString += " and `order`.receive_name like '%" + order.getReceiveName() + "%'";
 			order.setReceiveName( null );
 		}
 		// 查询出有出库单或者没有出库单的order
-		if ( order.getHasOrderBatch() != null && order.getHasOrderBatch().booleanValue() == true )
+		if( order.getHasOrderBatch() != null && order.getHasOrderBatch().booleanValue() == true )
 		{
 			sqlString += " and not EXISTS(select 1 from t_order_batch as orderBatch where orderBatch.order_id = `order`.id)";
 		}
-		if ( order.getWarehouseId() != null )
+		if( order.getWarehouseId() != null )
 		{
 			sqlString += " and(orderItem.warehouse_id = " +
 				order.getWarehouseId() + " or(" + "orderItem.warehouse_id is null" + " and(exists(select 1" +
@@ -296,10 +296,10 @@ public class OrderService
 				order.getWarehouseId() + ")" + ")))";
 			order.setWarehouseId( null );
 		}
-		else if ( order.getWarehouseIds() != null && order.getWarehouseIds().length > 0 )
+		else if( order.getWarehouseIds() != null && order.getWarehouseIds().length > 0 )
 		{
 			String warehouseIds = "";
-			for ( int i = 0, len = order.getWarehouseIds().length; i < len - 1; i++ )
+			for( int i = 0, len = order.getWarehouseIds().length; i < len - 1; i++ )
 			{
 				warehouseIds += order.getWarehouseIds()[ 0 ] + ",";
 			}
@@ -325,7 +325,7 @@ public class OrderService
 			order.getOrderIds().add( Long.parseLong( orderId.toString() ) );
 		} );
 
-		if ( order.getOrderIds().size() == 0 )
+		if( order.getOrderIds().size() == 0 )
 		{
 			order.getOrderIds().add( 0L );
 		}
@@ -333,18 +333,18 @@ public class OrderService
 
 	public void filterItemsForOrder( List< Order > orders, long assginWarehouseId )
 	{
-		for ( Order _order : orders )
+		for( Order _order : orders )
 		{
 			System.out.println( "order: " + _order.getId() );
 
 			List< OrderItem > deletedItems = new ArrayList< >();
-			for ( int i = 0, len = _order.getItems().size(); i < len; i++ )
+			for( int i = 0, len = _order.getItems().size(); i < len; i++ )
 			{
 				OrderItem item = _order.getItems().get( i );
 				System.out.println( "item: " + item.getId() );
 
 				// 1.判断item有没有设置指定的warehouseid, 并且是否等于查询的warehouseId
-				if ( item.getWarehouseId() != null && item.getWarehouseId().longValue() == assginWarehouseId )
+				if( item.getWarehouseId() != null && item.getWarehouseId().longValue() == assginWarehouseId )
 				{
 					continue;
 				}
@@ -352,23 +352,23 @@ public class OrderService
 				{
 					// 2.判断item关联的产品有没有配置产品店铺通道,
 					boolean exit = false;
-					if ( item.getProduct().getShopTunnels() != null && item.getProduct().getShopTunnels().size() > 0 )
+					if( item.getProduct().getShopTunnels() != null && item.getProduct().getShopTunnels().size() > 0 )
 					{
 						// 如果有，找到配置的产品店铺通道
 						boolean match = false;
-						for ( ProductShopTunnel productShopTunnel : item.getProduct().getShopTunnels() )
+						for( ProductShopTunnel productShopTunnel : item.getProduct().getShopTunnels() )
 						{
-							if ( productShopTunnel.getShopId().longValue() == _order.getShopId().longValue() )
+							if( productShopTunnel.getShopId().longValue() == _order.getShopId().longValue() )
 							{
 								match = true;
 								// 匹配到店铺
 								// 循环店铺通道
-								for ( ShopTunnel shopTunnel : _order.getShop().getTunnels() )
+								for( ShopTunnel shopTunnel : _order.getShop().getTunnels() )
 								{
 									// 匹配到通道
-									if ( shopTunnel.getId().longValue() == productShopTunnel.getTunnelId().longValue() )
+									if( shopTunnel.getId().longValue() == productShopTunnel.getTunnelId().longValue() )
 									{
-										if ( shopTunnel.getDefaultWarehouseId().longValue() == assginWarehouseId )
+										if( shopTunnel.getDefaultWarehouseId().longValue() == assginWarehouseId )
 										{
 											break;
 										}
@@ -381,20 +381,20 @@ public class OrderService
 									}
 								}
 							}
-							if ( exit )
+							if( exit )
 							{
 								break;
 							}
 						}
 
-						if ( ! match )
+						if( ! match )
 						{
 							// 3.判断订单店铺下的默认通道的默认仓库是否和查询的warehouseId相等
-							for ( ShopTunnel shopTunnel : _order.getShop().getTunnels() )
+							for( ShopTunnel shopTunnel : _order.getShop().getTunnels() )
 							{
-								if ( shopTunnel.getDefaultOption() )
+								if( shopTunnel.getDefaultOption() )
 								{
-									if ( shopTunnel.getDefaultWarehouseId().longValue() == assginWarehouseId )
+									if( shopTunnel.getDefaultWarehouseId().longValue() == assginWarehouseId )
 									{
 										break;
 									}
@@ -410,11 +410,11 @@ public class OrderService
 					else
 					{
 						// 3.判断订单店铺下的默认通道的默认仓库是否和查询的warehouseId相等
-						for ( ShopTunnel shopTunnel : _order.getShop().getTunnels() )
+						for( ShopTunnel shopTunnel : _order.getShop().getTunnels() )
 						{
-							if ( shopTunnel.getDefaultOption() )
+							if( shopTunnel.getDefaultOption() )
 							{
-								if ( shopTunnel.getDefaultWarehouseId().longValue() == assginWarehouseId )
+								if( shopTunnel.getDefaultWarehouseId().longValue() == assginWarehouseId )
 								{
 									break;
 								}
@@ -429,7 +429,7 @@ public class OrderService
 				}
 			}
 
-			if ( deletedItems.size() > 0 )
+			if( deletedItems.size() > 0 )
 			{
 				_order.getItems().removeAll( deletedItems );
 			}
@@ -441,23 +441,23 @@ public class OrderService
 	{
 		System.out.println( "checkItemProductShopTunnel===========" );
 		// 循环items
-		for ( OrderItem item : order.getItems() )
+		for( OrderItem item : order.getItems() )
 		{
 			// 判断当前item上是否有指定仓库
-			if ( item.getWarehouseId() != null )
+			if( item.getWarehouseId() != null )
 			{
 				boolean exitShopTunnels = false;
 				// 循环当前订单所属店铺的所有通道
-				for ( ShopTunnel tunnel : order.getShop().getTunnels() )
+				for( ShopTunnel tunnel : order.getShop().getTunnels() )
 				{
 					// 判断通道是不是仓库通道，并且行为是包含
-					if ( tunnel.getType().intValue() == 1 && tunnel.getBehavior().intValue() == 1 )
+					if( tunnel.getType().intValue() == 1 && tunnel.getBehavior().intValue() == 1 )
 					{
 						// 循环每个通道下的仓库
-						for ( Warehouse warehouse : tunnel.getWarehouses() )
+						for( Warehouse warehouse : tunnel.getWarehouses() )
 						{
 							// 判断当前仓库id是否和item上指定的仓库id一样
-							if ( warehouse.getId().longValue() == item.getWarehouseId().longValue() )
+							if( warehouse.getId().longValue() == item.getWarehouseId().longValue() )
 							{
 								// 设置指定通道，和设置指定通道的默认仓库
 								ShopTunnel assignTunnel = new ShopTunnel();
@@ -473,7 +473,7 @@ public class OrderService
 						}
 					}
 
-					if ( exitShopTunnels )
+					if( exitShopTunnels )
 					{
 						break;
 					}
@@ -483,25 +483,25 @@ public class OrderService
 			else
 			{
 				// 如果item上没有指定仓库，检查item关联的商品上是否有设置商品通道
-				if ( item.getProduct().getShopTunnels().size() > 0 )
+				if( item.getProduct().getShopTunnels().size() > 0 )
 				{
 					boolean match = false;
 					// 循环item关联商品的设置的通道
-					for ( ProductShopTunnel productShopTunnel : item.getProduct().getShopTunnels() )
+					for( ProductShopTunnel productShopTunnel : item.getProduct().getShopTunnels() )
 					{
 						// 判断当前商品通道的店铺是不是订单的店铺
-						if ( productShopTunnel.getShopId().longValue() == order.getShop().getId().longValue() )
+						if( productShopTunnel.getShopId().longValue() == order.getShop().getId().longValue() )
 						{
 							match = true;
 							// 循环店铺通道
-							for ( ShopTunnel tunnel : order.getShop().getTunnels() )
+							for( ShopTunnel tunnel : order.getShop().getTunnels() )
 							{
 								// 判断店铺通过的id是不是和商品指定通道的id相等
-								if ( tunnel.getId().longValue() == productShopTunnel.getTunnelId() )
+								if( tunnel.getId().longValue() == productShopTunnel.getTunnelId() )
 								{
 									item.setAssignTunnel( tunnel );
 									// 如何选择的通道是一个供应商通道
-									if ( tunnel.getDefaultWarehouse() == null )
+									if( tunnel.getDefaultWarehouse() == null )
 									{
 										item.setAssignTunnel( order.getShop().getDefaultTunnel() );
 									}
@@ -513,7 +513,7 @@ public class OrderService
 					}
 
 					// 如果商品指定的通道没有一个和当前订单店铺的通道吻合
-					if ( ! match )
+					if( ! match )
 					{
 						item.setAssignTunnel( order.getShop().getDefaultTunnel() );
 					}
@@ -533,21 +533,21 @@ public class OrderService
 		List< Long > warehouseIds = new ArrayList< >();
 		inventoryQuery.setProductIds( new ArrayList< >() );
 		// 先收集出，需要出库的item都来自那些仓库
-		for ( Order order : orders )
+		for( Order order : orders )
 		{
-			if ( order.getIgnoreCheck() )
+			if( order.getIgnoreCheck() )
 			{
 				continue;
 			}
-			for ( OrderItem item : order.getItems() )
+			for( OrderItem item : order.getItems() )
 			{
 				inventoryQuery.getProductIds().add( item.getProduct().getId().longValue() );
 				boolean exist = false;
-				if ( item.getAssignTunnel() != null )
+				if( item.getAssignTunnel() != null )
 				{
-					for ( Long warehouseId : warehouseIds )
+					for( Long warehouseId : warehouseIds )
 					{
-						if ( warehouseId.longValue() == item.getAssignTunnel().getDefaultWarehouse().getId()
+						if( warehouseId.longValue() == item.getAssignTunnel().getDefaultWarehouse().getId()
 							.longValue() )
 						{
 							exist = true;
@@ -558,7 +558,7 @@ public class OrderService
 							exist = false;
 						}
 					}
-					if ( ! exist )
+					if( ! exist )
 					{
 						warehouseIds.add( item.getAssignTunnel().getDefaultWarehouse().getId() );
 					}
@@ -587,22 +587,22 @@ public class OrderService
 		boolean differentWarehouseError = false;
 		List< Order > orders = review.getOrders();
 		// 循环 order
-		for ( Order order : orders )
+		for( Order order : orders )
 		{
 			// 当order没有被移出的时候才进行判断
-			if ( order.getIgnoreCheck() )
+			if( order.getIgnoreCheck() )
 			{
 				continue;
 			}
 			// 循环 order item
-			for ( OrderItem item : order.getItems() )
+			for( OrderItem item : order.getItems() )
 			{
-				if ( item.getAssignTunnel() != null )
+				if( item.getAssignTunnel() != null )
 				{
 					sameWarehouseIds.add( item.getAssignTunnel().getDefaultWarehouse().getId() );
-					for ( Long warehouseId : sameWarehouseIds )
+					for( Long warehouseId : sameWarehouseIds )
 					{
-						if ( warehouseId.longValue() != item.getAssignTunnel().getDefaultWarehouse().getId()
+						if( warehouseId.longValue() != item.getAssignTunnel().getDefaultWarehouse().getId()
 							.longValue() )
 						{
 							System.out
@@ -612,20 +612,20 @@ public class OrderService
 						}
 					}
 				}
-				if ( differentWarehouseError )
+				if( differentWarehouseError )
 				{
 					break;
 				}
 			}
-			if ( differentWarehouseError )
+			if( differentWarehouseError )
 			{
 				break;
 			}
 		}
 
-		if ( differentWarehouseError )
+		if( differentWarehouseError )
 		{
-			for ( Order order : orders )
+			for( Order order : orders )
 			{
 				order.getCheckMap().put( "differentWarehouseError", true );
 			}
@@ -633,7 +633,7 @@ public class OrderService
 		}
 		else
 		{
-			for ( Order order : orders )
+			for( Order order : orders )
 			{
 				order.getCheckMap().put( "differentWarehouseError", false );
 			}
@@ -649,7 +649,7 @@ public class OrderService
 		Inventory inventoryQuery = collectWarehouseIds( review.getOrders() );
 
 		// 如果没有指定的商品，直接不做任何事
-		if ( inventoryQuery.getProductIds() == null || inventoryQuery.getProductIds().size() == 0 ) { return; }
+		if( inventoryQuery.getProductIds() == null || inventoryQuery.getProductIds().size() == 0 ) { return; }
 
 		// 查询出这些仓库的指定商品的库存
 		List< Inventory > inventories = inventoryService.getInventories( inventoryQuery, null );
@@ -669,11 +669,11 @@ public class OrderService
 		// 重置review的productInventoryNotEnoughError为false
 		review.getCheckMap().put( "productInventoryNotEnoughError", false );
 
-		for ( Order order : orders )
+		for( Order order : orders )
 		{
 
 			// 不验证忽略的订单
-			if ( order.getIgnoreCheck() )
+			if( order.getIgnoreCheck() )
 			{
 				continue;
 			}
@@ -681,11 +681,11 @@ public class OrderService
 			// 判断前先把每一个order的productInventoryNotEnoughError设置为false
 			order.getCheckMap().put( "productInventoryNotEnoughError", false );
 			// 循环item
-			for ( OrderItem item : order.getItems() )
+			for( OrderItem item : order.getItems() )
 			{
 
 				// 如果item中的product为临时采购商品，则忽略
-				if ( item.getProduct().getTempPurchasing() )
+				if( item.getProduct().getTempPurchasing() )
 				{
 					continue;
 				}
@@ -694,17 +694,17 @@ public class OrderService
 				boolean exitProductsEach = false;
 				boolean matchItemInventory = false;
 				// 循环products
-				for ( Product product : products )
+				for( Product product : products )
 				{
 					// 判断当前的item是否就是当前的产品
-					if ( item.getProduct().getSku().equals( product.getSku() ) )
+					if( item.getProduct().getSku().equals( product.getSku() ) )
 					{
 
 						// 循环当前产品的仓库
-						for ( Warehouse warehouse : product.getWarehouses() )
+						for( Warehouse warehouse : product.getWarehouses() )
 						{
 							// 判断当前item指定的仓库是否在产品所在的仓库中
-							if ( item.getAssignTunnel().getDefaultWarehouse().getId().longValue() == warehouse.getId()
+							if( item.getAssignTunnel().getDefaultWarehouse().getId().longValue() == warehouse.getId()
 								.longValue() )
 							{
 								matchItemInventory = true;
@@ -714,7 +714,7 @@ public class OrderService
 									order.getId() + ", itemid:" + item.getId() + "," + item.getProduct().getName() +
 									"," + item.getAssignTunnel().getDefaultWarehouse().getName() + "," +
 									warehouse.getTotal() );
-								if ( warehouse.getTotal().longValue() < 0 )
+								if( warehouse.getTotal().longValue() < 0 )
 								{
 									issueItems.add( item );
 								}
@@ -723,13 +723,13 @@ public class OrderService
 							}
 						}
 					}
-					if ( exitProductsEach )
+					if( exitProductsEach )
 					{
 						break;
 					}
 				}
 				// 如果没有匹配到item的库存信息，也是一个问题item
-				if ( ! matchItemInventory )
+				if( ! matchItemInventory )
 				{
 					issueItems.add( item );
 				}
@@ -737,15 +737,15 @@ public class OrderService
 
 		}
 
-		for ( OrderItem issueItem : issueItems )
+		for( OrderItem issueItem : issueItems )
 		{
-			for ( Order order : orders )
+			for( Order order : orders )
 			{
-				if ( ! order.getIgnoreCheck() )
+				if( ! order.getIgnoreCheck() )
 				{
-					for ( OrderItem item : order.getItems() )
+					for( OrderItem item : order.getItems() )
 					{
-						if ( item.getProduct().getSku().equals( issueItem.getProduct().getSku() ) &&
+						if( item.getProduct().getSku().equals( issueItem.getProduct().getSku() ) &&
 							item.getAssignTunnel().getDefaultWarehouse().getId().longValue() == issueItem
 								.getAssignTunnel().getDefaultWarehouse().getId().longValue() )
 						{
@@ -769,27 +769,27 @@ public class OrderService
 		review.getCheckMap().put( "orderExistOutInventorySheetError", false );
 
 		// 循环 orders
-		for ( Order order : orders )
+		for( Order order : orders )
 		{
-			if ( order.getIgnoreCheck() )
+			if( order.getIgnoreCheck() )
 			{
 				continue;
 			}
 
 			order.getCheckMap().put( "orderExistOutInventorySheetError", false );
 			boolean exitItemsEach = false;
-			for ( OrderItem item : order.getItems() )
+			for( OrderItem item : order.getItems() )
 			{
 				// 忽略临时采购商品
-				if ( item.getProduct().getTempPurchasing() )
+				if( item.getProduct().getTempPurchasing() )
 				{
 					continue;
 				}
-				if ( item.getAssignTunnel() != null )
+				if( item.getAssignTunnel() != null )
 				{
-					for ( OrderBatch orderBatch : order.getBatches() )
+					for( OrderBatch orderBatch : order.getBatches() )
 					{
-						if ( orderBatch.getWarehouseId().longValue() == item.getAssignTunnel().getDefaultWarehouse()
+						if( orderBatch.getWarehouseId().longValue() == item.getAssignTunnel().getDefaultWarehouse()
 							.getId().longValue() )
 						{
 							order.getCheckMap().put( "orderExistOutInventorySheetError", true );
@@ -799,7 +799,7 @@ public class OrderService
 						}
 					}
 				}
-				if ( exitItemsEach )
+				if( exitItemsEach )
 				{
 					break;
 				}
@@ -816,7 +816,7 @@ public class OrderService
 		review.getOrders().forEach( o ->
 		{
 			order.getOrderIds().add( o.getId() );
-			if ( o.getIgnoreCheck() )
+			if( o.getIgnoreCheck() )
 			{
 				moveOutOrderIds.add( o.getId() );
 			}
@@ -825,9 +825,9 @@ public class OrderService
 		newOrders.forEach( o ->
 		{
 			// 重新设置移出的order
-			for ( Long moveOutOrderId : moveOutOrderIds )
+			for( Long moveOutOrderId : moveOutOrderIds )
 			{
-				if ( moveOutOrderId.longValue() == o.getId().longValue() )
+				if( moveOutOrderId.longValue() == o.getId().longValue() )
 				{
 					o.setIgnoreCheck( true );
 					break;
@@ -837,7 +837,7 @@ public class OrderService
 			this.checkItemProductShopTunnel( o );
 		} );
 
-		if ( review.getAssignWarehouseId() != null )
+		if( review.getAssignWarehouseId() != null )
 		{
 			this.filterItemsForOrder( newOrders, review.getAssignWarehouseId() );
 		}
@@ -852,7 +852,7 @@ public class OrderService
 
 		this.confirmDifferentWarehouse( review );
 
-		if ( ! review.getIgnoredMap().get( "productInventoryNotEnough" ) )
+		if( ! review.getIgnoredMap().get( "productInventoryNotEnough" ) )
 		{
 			this.confirmProductInventoryNotEnough( review );
 		} /*
@@ -860,7 +860,7 @@ public class OrderService
 			 * false); }
 			 */
 
-		if ( ! review.getIgnoredMap().get( "orderExistOutInventorySheet" ) )
+		if( ! review.getIgnoredMap().get( "orderExistOutInventorySheet" ) )
 		{
 			this.confirmOrderExistOutInventorySheet( review );
 		} /*
@@ -878,15 +878,15 @@ public class OrderService
 		review.getCheckMap().put( "differentDeliveryMethodError", false );
 		List< Order > orders = review.getOrders();
 
-		if ( review.getOrders() != null && review.getOrders().size() > 0 )
+		if( review.getOrders() != null && review.getOrders().size() > 0 )
 		{
 			Order lastOrder = review.getOrders().get( review.getOrders().size() - 1 );
-			for ( Order order : orders )
+			for( Order order : orders )
 			{
 				/* 没有被移出 */
-				if ( ! order.getIgnoreCheck() )
+				if( ! order.getIgnoreCheck() )
 				{
-					if ( order.getDeliveryMethod() == null ||
+					if( order.getDeliveryMethod() == null ||
 						! order.getDeliveryMethod().equals( lastOrder.getDeliveryMethod() ) )
 					{
 						/* 不通过 */
@@ -903,7 +903,7 @@ public class OrderService
 	{
 		Courier selectedCourier = ( Courier ) review.getSelectedCourier();
 		String startShipNumber = ( String ) review.getDataMap().get( "startShipNumber" );
-		if ( selectedCourier != null && ( startShipNumber != null && ! startShipNumber.equals( "" ) ) )
+		if( selectedCourier != null && ( startShipNumber != null && ! startShipNumber.equals( "" ) ) )
 		{
 			review.getCheckMap().put( "emptyCourierAndShipNumberError", false );
 		}
@@ -918,21 +918,21 @@ public class OrderService
 	public void confirmWarehouseExistOrderShipment( OperationReviewDTO review )
 	{
 		boolean isWarehouseExistSomeOrderShipment = false;
-		for ( Order order : review.getOrders() )
+		for( Order order : review.getOrders() )
 		{
 			boolean isWarehouseExistOrderShipment = false;
 
 			/* 没有被移出 */
-			if ( ! order.getIgnoreCheck() )
+			if( ! order.getIgnoreCheck() )
 			{
 				/* 订单有发货单，则订单在同一仓库下存在发货单的条件才有可能会成立 */
-				if ( order.getShipments() != null && order.getShipments().size() > 0 )
+				if( order.getShipments() != null && order.getShipments().size() > 0 )
 				{
-					for ( Shipment shipment : order.getShipments() )
+					for( Shipment shipment : order.getShipments() )
 					{
-						for ( OrderItem item : order.getItems() )
+						for( OrderItem item : order.getItems() )
 						{
-							if ( shipment.getShipWarehouseId() != null &&
+							if( shipment.getShipWarehouseId() != null &&
 								item.getAssignTunnel() != null &&
 								item.getAssignTunnel().getDefaultWarehouse() != null &&
 								item.getAssignTunnel().getDefaultWarehouse().getId() != null &&
@@ -946,7 +946,7 @@ public class OrderService
 				}
 
 				/* 订单在同一仓库下存在发货单 */
-				if ( isWarehouseExistOrderShipment )
+				if( isWarehouseExistOrderShipment )
 				{
 					order.getCheckMap().put( "warehouseExistOrderShipmentError", true );
 				}
@@ -957,14 +957,14 @@ public class OrderService
 			}
 
 			/* 如果有一个订单在同一仓库下存在发货单，则有某一个订单在同一仓库下存在发货单成立 */
-			if ( isWarehouseExistOrderShipment )
+			if( isWarehouseExistOrderShipment )
 			{
 				isWarehouseExistSomeOrderShipment = isWarehouseExistOrderShipment;
 			}
 		}
 
 		/* 某订单在同一仓库下存在发货单，并且不取消该验证 */
-		if ( isWarehouseExistSomeOrderShipment )
+		if( isWarehouseExistSomeOrderShipment )
 		{
 			review.getCheckMap().put( "warehouseExistOrderShipmentError", true );
 		}
@@ -981,12 +981,12 @@ public class OrderService
 		List< Order > orders = review.getOrders();
 
 		boolean isReceiveAddressEmpty = false;
-		for ( Order order : orders )
+		for( Order order : orders )
 		{
 			/* 没有被移出 */
-			if ( ! order.getIgnoreCheck() )
+			if( ! order.getIgnoreCheck() )
 			{
-				if ( order.getReceiveAddress() == null || order.getReceiveAddress().trim().equals( "" ) )
+				if( order.getReceiveAddress() == null || order.getReceiveAddress().trim().equals( "" ) )
 				{
 					/* 当前订单不通过 */
 					isReceiveAddressEmpty = true;
@@ -1006,7 +1006,7 @@ public class OrderService
 	public void setConfirmable( OperationReviewDTO review )
 	{
 		/* 如果验证全都通过 */
-		if ( ! review.getCheckMap().get( "differentWarehouseError" ) &&
+		if( ! review.getCheckMap().get( "differentWarehouseError" ) &&
 			! review.getCheckMap().get( "differentDeliveryMethodError" ) &&
 			! review.getCheckMap().get( "emptyCourierAndShipNumberError" ) &&
 			! review.getCheckMap().get( "warehouseExistOrderShipmentError" ) &&
@@ -1024,37 +1024,37 @@ public class OrderService
 			boolean isEmptyReceiveAddressError = false;
 
 			/* 不在同一仓库，并且没有取消验证 */
-			if ( review.getCheckMap().get( "differentWarehouseError" ) &&
+			if( review.getCheckMap().get( "differentWarehouseError" ) &&
 				! review.getIgnoredMap().get( "differentWarehouseError" ) )
 			{
 				isDifferentWarehouseError = true;
 			}
 			/* 发货方式不同，并且没有取消验证 */
-			if ( review.getCheckMap().get( "differentDeliveryMethodError" ) &&
+			if( review.getCheckMap().get( "differentDeliveryMethodError" ) &&
 				! review.getIgnoredMap().get( "differentDeliveryMethodError" ) )
 			{
 				isDifferentDeliveryMethodError = true;
 			} /* 没有指定快递公司或填写起始快递单号，并且没有取消验证 */
-			if ( review.getCheckMap().get( "emptyCourierAndShipNumberError" ) &&
+			if( review.getCheckMap().get( "emptyCourierAndShipNumberError" ) &&
 				! review.getIgnoredMap().get( "emptyCourierAndShipNumberError" ) )
 			{
 				isEmptyCourierAndShipNumberError = true;
 			}
 			/* 订单在同一仓库下存在发货单，并且没有取消验证 */
-			if ( review.getCheckMap().get( "warehouseExistOrderShipmentError" ) &&
+			if( review.getCheckMap().get( "warehouseExistOrderShipmentError" ) &&
 				! review.getIgnoredMap().get( "warehouseExistOrderShipmentError" ) )
 			{
 				isWarehouseExistOrderShipmentError = true;
 			}
 			/* 订单没有填写收件地址，并且没有取消验证 */
-			if ( review.getCheckMap().get( "emptyReceiveAddressError" ) &&
+			if( review.getCheckMap().get( "emptyReceiveAddressError" ) &&
 				! review.getIgnoredMap().get( "emptyReceiveAddressError" ) )
 			{
 				isEmptyReceiveAddressError = true;
 			}
 
 			/* 如果有一个验证不通过 */
-			if ( isDifferentWarehouseError ||
+			if( isDifferentWarehouseError ||
 				isDifferentDeliveryMethodError || isEmptyCourierAndShipNumberError ||
 				isWarehouseExistOrderShipmentError || isEmptyReceiveAddressError )
 			{
@@ -1073,7 +1073,7 @@ public class OrderService
 	public void executeShipmentGeneration( OperationReviewDTO review )
 	{
 		/* 如果有运单 */
-		if ( review.getShipments() != null && review.getShipments().size() > 0 )
+		if( review.getShipments() != null && review.getShipments().size() > 0 )
 		{
 			/* 取得操作员信息 */
 			Number operatorId = ( Number ) review.getDataMap().get( "operatorId" );
@@ -1086,12 +1086,12 @@ public class OrderService
 			Boolean isGeneratableShipments = false;
 
 			List< Shipment > shipments = review.getShipments();
-			for ( Shipment shipment : shipments )
+			for( Shipment shipment : shipments )
 			{
 				/**
 				 * 确保运单详情不为空
 				 */
-				if ( shipment.getShipmentItems() != null && shipment.getShipmentItems().size() > 0 )
+				if( shipment.getShipmentItems() != null && shipment.getShipmentItems().size() > 0 )
 				{
 					/* 给发货单初始化创建人 */
 					shipment.setOperatorId( finalOperatorId );
@@ -1107,7 +1107,7 @@ public class OrderService
 					Integer qtyTotalItemShipped = 0;
 
 					/* 重新计算运单详情数量 */
-					for ( ShipmentItem item : shipment.getShipmentItems() )
+					for( ShipmentItem item : shipment.getShipmentItems() )
 					{
 						/* 叠加每件商品的数量，成本，重量 */
 						qtyTotalItemShipped += item.getQtyShipped();
@@ -1123,14 +1123,14 @@ public class OrderService
 					/**
 					 * 保存发货单详情简称至打印名称，供发货单生成后打印快递单用
 					 */
-					for ( ShipmentItem shipmentItem : shipment.getShipmentItems() )
+					for( ShipmentItem shipmentItem : shipment.getShipmentItems() )
 					{
 						shipmentItem.setPrintName( shipmentItem.getShortName() );
 					}
 				}
 			}
 
-			if ( isGeneratableShipments )
+			if( isGeneratableShipments )
 			{
 				this.shipmentRepository.save( shipments );
 				review.getResultMap().put( "generatedShipmentCount", shipments.size() );
@@ -1157,7 +1157,7 @@ public class OrderService
 		countBufferSQL.append( "SELECT COUNT( * ) FROM t_order as `order` " );
 
 		countBufferSQL.append( "WHERE deleted = false " );
-		if ( review.getAssignShopId() != null )
+		if( review.getAssignShopId() != null )
 		{
 			bufferSQL.append( "AND `order`.shop_id = ?1 " );
 			bufferSQL.append( "AND `order`.shop_id = ( " +
@@ -1172,7 +1172,7 @@ public class OrderService
 				"		WHERE object_id = `order`.id AND object_type = 1 ) )" );
 		}
 		System.out.println( "review.getShowDeployedOrders(): " + review.getShowDeployedOrders() );
-		if ( review.getShowDeployedOrders() == null || ! review.getShowDeployedOrders() )
+		if( review.getShowDeployedOrders() == null || ! review.getShowDeployedOrders() )
 		{
 			/**
 			 * 取得未生成发货单的订单
@@ -1194,13 +1194,13 @@ public class OrderService
 			countBufferSQL.append(
 				"AND `order`.id IN( SELECT DISTINCT( order_id ) FROM t_shipment WHERE ship_status IN( 1, 2, 7 ) ) " );
 		}
-		if ( review.getAssignDeliveryMethod() != null )
+		if( review.getAssignDeliveryMethod() != null )
 		{
 			bufferSQL.append( "AND `order`.delivery_method = ?2 " );
 
 			countBufferSQL.append( "AND `order`.delivery_method = ?2 " );
 		}
-		if ( review.getAssignShippingDescription() != null )
+		if( review.getAssignShippingDescription() != null )
 		{
 			bufferSQL.append( "AND `order`.shipping_description LIKE ?3 " );
 
@@ -1210,17 +1210,17 @@ public class OrderService
 
 		Query query = em.createNativeQuery( bufferSQL.toString(), Order.class );
 		Query queryCount = em.createNativeQuery( countBufferSQL.toString() );
-		if ( review.getAssignShopId() != null )
+		if( review.getAssignShopId() != null )
 		{
 			query.setParameter( 1, review.getAssignShopId() );
 			queryCount.setParameter( 1, review.getAssignShopId() );
 		}
-		if ( review.getAssignDeliveryMethod() != null )
+		if( review.getAssignDeliveryMethod() != null )
 		{
 			query.setParameter( 2, review.getAssignDeliveryMethod() );
 			queryCount.setParameter( 2, review.getAssignDeliveryMethod() );
 		}
-		if ( review.getAssignShippingDescription() != null )
+		if( review.getAssignShippingDescription() != null )
 		{
 			query.setParameter( 3, "%" + review.getAssignShippingDescription() + "%" );
 			queryCount.setParameter( 3, "%" + review.getAssignShippingDescription() + "%" );
@@ -1232,7 +1232,7 @@ public class OrderService
 			( pageable.getPageNumber() <= 1 ? 0 : pageable.getPageNumber() - 1 ) * pageable.getPageSize() );
 		query.setParameter( 5, pageable.getPageSize() );
 
-		if ( query.getResultList() != null && query.getResultList().size() > 0 )
+		if( query.getResultList() != null && query.getResultList().size() > 0 )
 		{
 			@SuppressWarnings( "unchecked" )
 			List< Order > orders = query.getResultList();
@@ -1242,7 +1242,7 @@ public class OrderService
 				this.checkItemProductShopTunnel( o );
 			} );
 
-			if ( review.getAssignWarehouseId() != null )
+			if( review.getAssignWarehouseId() != null )
 			{
 				this.filterItemsForOrder( orders, review.getAssignWarehouseId() );
 			}
@@ -1255,7 +1255,7 @@ public class OrderService
 			 */
 
 			List< Shipment > reviewShipments = new ArrayList< Shipment >();
-			for ( Order finalOrder : orders )
+			for( Order finalOrder : orders )
 			{
 				Shipment shipment = new Shipment();
 				shipment.setOrderId( finalOrder.getId() );
@@ -1274,7 +1274,7 @@ public class OrderService
 				shipment.setReceiveProvince( finalOrder.getReceiveProvince() );
 				shipment.setReceiveCountry( finalOrder.getReceiveCountry() );
 				Long shipWarehouseId = null;
-				if ( finalOrder.getItems() != null &&
+				if( finalOrder.getItems() != null &&
 					finalOrder.getItems().size() > 0 && finalOrder.getItems().get( 0 ).getAssignTunnel() != null &&
 					finalOrder.getItems().get( 0 ).getAssignTunnel().getDefaultWarehouse() != null )
 				{
@@ -1286,10 +1286,10 @@ public class OrderService
 					finalOrder.getShippingFee() != null ? finalOrder.getShippingFee() : new BigDecimal( 0 ) );
 				shipment.setTotalWeight( finalOrder.getWeight() != null ? finalOrder.getWeight() : 0 );
 
-				if ( finalOrder.getItems() != null && finalOrder.getItems().size() > 0 )
+				if( finalOrder.getItems() != null && finalOrder.getItems().size() > 0 )
 				{
 					List< ShipmentItem > items = new ArrayList< ShipmentItem >();
-					for ( OrderItem item : finalOrder.getItems() )
+					for( OrderItem item : finalOrder.getItems() )
 					{
 						ShipmentItem finalItem = new ShipmentItem();
 						finalItem.setShortName( item.getProduct().getShortName() );
@@ -1332,7 +1332,7 @@ public class OrderService
 		this.setConfirmable( review );
 
 		/* 如果验证全都通过，并且操作类型是 CONFIRM 则执行创建操作 */
-		if ( review.isConfirmable() && review.getAction().equals( OperationReviewDTO.CONFIRM ) )
+		if( review.isConfirmable() && review.getAction().equals( OperationReviewDTO.CONFIRM ) )
 		{
 			/* 执行生成发货单操作 */
 			this.executeShipmentGeneration( review );
@@ -1349,27 +1349,31 @@ public class OrderService
 			List< Predicate > predicates = new ArrayList< >();
 			predicates.add(
 				cb.equal( root.get( "deleted" ), order.getDeleted() != null && order.getDeleted() ? true : false ) );
-			if ( order.getOrderId() != null )
+			if( order.getOrderId() != null )
 			{
 				predicates.add( cb.equal( root.get( "id" ), order.getOrderId() ) );
 			}
-			if ( order.getShopId() != null )
+			if( order.getExternalSn() != null && ! order.getExternalSn().trim().equals( "" ) )
+			{
+				predicates.add( cb.like( root.get( "externalSn" ), "%" + order.getExternalSn() + "%" ) );
+			}
+			if( order.getShopId() != null )
 			{
 				predicates.add( cb.equal( root.get( "shopId" ), order.getShopId() ) );
 			}
-			if ( order.getShopIds() != null && order.getShopIds().length > 0 )
+			if( order.getShopIds() != null && order.getShopIds().length > 0 )
 			{
 				predicates.add( root.get( "shopId" ).in( ( Object[] ) order.getShopIds() ) );
 			}
-			if ( order.getDeliveryMethod() != null )
+			if( order.getDeliveryMethod() != null )
 			{
 				predicates.add( cb.equal( root.get( "deliveryMethod" ), order.getDeliveryMethod() ) );
 			}
-			if ( StringUtils.hasText( order.getReceiveName() ) )
+			if( StringUtils.hasText( order.getReceiveName() ) )
 			{
 				predicates.add( cb.like( root.get( "receiveName" ), "%" + order.getReceiveName() + "%" ) );
 			}
-			if ( order.getInternalCreateTimeStart() != null && order.getInternalCreateTimeEnd() != null )
+			if( order.getInternalCreateTimeStart() != null && order.getInternalCreateTimeEnd() != null )
 			{
 				try
 				{
@@ -1382,7 +1386,7 @@ public class OrderService
 					e.printStackTrace();
 				}
 			}
-			else if ( order.getInternalCreateTimeStart() != null )
+			else if( order.getInternalCreateTimeStart() != null )
 			{
 				try
 				{
@@ -1394,7 +1398,7 @@ public class OrderService
 					e.printStackTrace();
 				}
 			}
-			else if ( order.getInternalCreateTimeEnd() != null )
+			else if( order.getInternalCreateTimeEnd() != null )
 			{
 				try
 				{
@@ -1406,7 +1410,7 @@ public class OrderService
 					e.printStackTrace();
 				}
 			}
-			if ( order.getShippingTimeStart() != null && order.getShippingTimeEnd() != null )
+			if( order.getShippingTimeStart() != null && order.getShippingTimeEnd() != null )
 			{
 				try
 				{
@@ -1423,7 +1427,7 @@ public class OrderService
 					e.printStackTrace();
 				}
 			}
-			else if ( order.getShippingTimeStart() != null )
+			else if( order.getShippingTimeStart() != null )
 			{
 				try
 				{
@@ -1439,7 +1443,7 @@ public class OrderService
 					e.printStackTrace();
 				}
 			}
-			else if ( order.getShippingTimeEnd() != null )
+			else if( order.getShippingTimeEnd() != null )
 			{
 				try
 				{
@@ -1455,7 +1459,7 @@ public class OrderService
 					e.printStackTrace();
 				}
 			}
-			if ( order.getShipNumber() != null && ! order.getShipNumber().trim().equals( "" ) )
+			if( order.getShipNumber() != null && ! order.getShipNumber().trim().equals( "" ) )
 			{
 				Subquery< Shipment > shipmentSubquery = query.subquery( Shipment.class );
 				Root< Shipment > shipmentRoot = shipmentSubquery.from( Shipment.class );
@@ -1464,7 +1468,7 @@ public class OrderService
 				predicates.add( cb.in( root.get( "id" ) ).value( shipmentSubquery ) );
 			}
 
-			if ( order.getStatusIds() != null )
+			if( order.getStatusIds() != null )
 			{
 				Subquery< ObjectProcess > objectProcessSubquery = query.subquery( ObjectProcess.class );
 				Root< ObjectProcess > objectProcessRoot = objectProcessSubquery.from( ObjectProcess.class );
@@ -1473,7 +1477,7 @@ public class OrderService
 					.where( objectProcessRoot.get( "stepId" ).in( ( Object[] ) order.getStatusIds() ) );
 				predicates.add( cb.in( root.get( "id" ) ).value( objectProcessSubquery ) );
 			}
-			if ( order.getOrderIds() != null && order.getOrderIds().size() > 0 )
+			if( order.getOrderIds() != null && order.getOrderIds().size() > 0 )
 			{
 				predicates.add( cb.in( root.get( "id" ) ).value( order.getOrderIds() ) );
 			}
@@ -1563,9 +1567,9 @@ public class OrderService
 		dtoOrder.setMemo( order.getMemo() );
 
 		String deliveryMethod = "未知运送方式";
-		if ( order.getDeliveryMethod() != null )
+		if( order.getDeliveryMethod() != null )
 		{
-			switch ( order.getDeliveryMethod() )
+			switch( order.getDeliveryMethod() )
 			{
 				case 1 :
 					deliveryMethod = "快递";
@@ -1616,7 +1620,7 @@ public class OrderService
 
 		/* 获得订单详情 */
 		List< DTO_OrderItem > dtoOrderItems = new ArrayList< DTO_OrderItem >();
-		for ( OrderItem orderItem : order.getItems() )
+		for( OrderItem orderItem : order.getItems() )
 		{
 			DTO_OrderItem dtoOrderItem = new DTO_OrderItem();
 			dtoOrderItem.setId( orderItem.getId() );
@@ -1635,9 +1639,9 @@ public class OrderService
 
 		/* 获得发货单 */
 		List< DTO_Shipment > dtoShipments = new ArrayList< DTO_Shipment >();
-		if ( order.getShipments() != null )
+		if( order.getShipments() != null )
 		{
-			for ( Shipment shipment : order.getShipments() )
+			for( Shipment shipment : order.getShipments() )
 			{
 				DTO_Shipment dtoShipment = new DTO_Shipment();
 				dtoShipment.setId( shipment.getId() );
@@ -1649,9 +1653,9 @@ public class OrderService
 				dtoShipment.setShip_number( shipment.getShipNumber() );
 
 				String shipStatus = "";
-				if ( shipment.getShipStatus() != null )
+				if( shipment.getShipStatus() != null )
 				{
-					switch ( shipment.getShipStatus() )
+					switch( shipment.getShipStatus() )
 					{
 						case 1 :
 							shipStatus = "待打印";
@@ -1711,9 +1715,9 @@ public class OrderService
 
 		/* 获得流程状态 */
 		List< DTO_Process_Status > dtoProcessStatus = new ArrayList< DTO_Process_Status >();
-		if ( order.getProcesses() != null )
+		if( order.getProcesses() != null )
 		{
-			for ( ObjectProcess objProcess : order.getProcesses() )
+			for( ObjectProcess objProcess : order.getProcesses() )
 			{
 				DTO_Process_Status processingState = new DTO_Process_Status();
 				processingState.setName( objProcess.getProcess().getName() );
@@ -1744,7 +1748,7 @@ public class OrderService
 		query.setParameter( 3, page_context.getPer_page() );
 
 		/* 3. 是否有续页 */
-		if ( page_context.getPage() * page_context.getPer_page() >= page_context.getTotal_number().longValue() )
+		if( page_context.getPage() * page_context.getPer_page() >= page_context.getTotal_number().longValue() )
 		{
 			page_context.setHas_more_page( false );
 		}
@@ -1753,11 +1757,11 @@ public class OrderService
 			page_context.setHas_more_page( true );
 		}
 
-		if ( ! query.getResultList().isEmpty() )
+		if( ! query.getResultList().isEmpty() )
 		{
 			List< Order > resultList = query.getResultList();
 
-			for ( Order order : resultList )
+			for( Order order : resultList )
 			{
 				DTO_Order dtoOrder = new DTO_Order();
 
@@ -1778,7 +1782,7 @@ public class OrderService
 		query.setParameter( 2, orderId );
 		query.setParameter( 3, orderSn );
 
-		if ( ! query.getResultList().isEmpty() )
+		if( ! query.getResultList().isEmpty() )
 		{
 			Order order = ( Order ) query.getSingleResult();
 
@@ -1803,9 +1807,9 @@ public class OrderService
 		List< OrderItem > orderItems = new ArrayList< OrderItem >();
 
 		/* 如果有传入订单详情 */
-		if ( dtoOrder.getOrder_items() != null && dtoOrder.getOrder_items().size() > 0 )
+		if( dtoOrder.getOrder_items() != null && dtoOrder.getOrder_items().size() > 0 )
 		{
-			for ( DTO_OrderItem dtoOrderItem : dtoOrder.getOrder_items() )
+			for( DTO_OrderItem dtoOrderItem : dtoOrder.getOrder_items() )
 			{
 				OrderItem orderItem = new OrderItem();
 
@@ -1826,7 +1830,7 @@ public class OrderService
 				query.setParameter( 1, shop.getId() );
 				query.setParameter( 2, dtoOrderItem.getSku() );
 
-				if ( ! query.getResultList().isEmpty() )
+				if( ! query.getResultList().isEmpty() )
 				{
 					Product product = ( Product ) query.getSingleResult();
 
@@ -1836,10 +1840,10 @@ public class OrderService
 
 					// 如果 Item 没有指定价格，根据 sku 查对应的 product，没有找到对应的 product
 					// 则返回错误信息并停止处理，如果在产品表里找到多个价位？
-					if ( dtoOrderItem.getUnit_price() == null || dtoOrderItem.getUnit_price().equals( 0 ) )
+					if( dtoOrderItem.getUnit_price() == null || dtoOrderItem.getUnit_price().equals( 0 ) )
 					{
 						/* 是否自营 */
-						if ( isSelfRunShop )
+						if( isSelfRunShop )
 						{
 							/***
 							 * 
@@ -1851,7 +1855,7 @@ public class OrderService
 						else
 						{
 							/* 给订单详情指定合作店铺所对应的产品价位 */
-							switch ( shop.getPriceLevel() )
+							switch( shop.getPriceLevel() )
 							{
 								case 1 :
 									dtoOrderItem.setUnit_price( product.getPriceL1() );
@@ -1909,7 +1913,7 @@ public class OrderService
 			}
 		}
 
-		if ( isSkuMatched )
+		if( isSkuMatched )
 		{
 			dtoOrder.setWeight( weight );
 			/* 订单总金额 = 商品金额(subtotal) + 运费(shipping_fee) */
@@ -1953,7 +1957,7 @@ public class OrderService
 			order.setReceiveAddress( dtoOrder.getReceive_address() );
 			order.setReceivePost( dtoOrder.getReceive_post() );
 
-			switch ( dtoOrder.getDelivery_method() )
+			switch( dtoOrder.getDelivery_method() )
 			{
 				case "快递" :
 					order.setDeliveryMethod( 1 );
@@ -1991,9 +1995,9 @@ public class OrderService
 			String processStepName = "";
 			process = this.processService.getProcess( order.getProcesses().get( 0 ).getProcess().getId() );
 			processName = process.getName();
-			for ( ProcessStep ps : process.getSteps() )
+			for( ProcessStep ps : process.getSteps() )
 			{
-				if ( ps.getId().equals( order.getProcesses().get( 0 ).getStep().getId() ) )
+				if( ps.getId().equals( order.getProcesses().get( 0 ).getStep().getId() ) )
 				{
 					processStepName = ps.getName();
 				}
@@ -2030,7 +2034,7 @@ public class OrderService
 		orderQuery.setParameter( 3, orderSn );
 
 		/* 如果通过 id 或 sn 找到对应订单 */
-		if ( ! orderQuery.getResultList().isEmpty() )
+		if( ! orderQuery.getResultList().isEmpty() )
 		{
 			/* 获取订单详细信息 */
 			Order order = ( Order ) orderQuery.getSingleResult();
@@ -2041,7 +2045,7 @@ public class OrderService
 			 * 
 			 */
 			/* 如果订单流程状态处在初始化阶段，也就是未处理阶段，那么就可以进行删改操作 */
-			if ( order.getProcesses().get( 0 ).getStep().getId().equals( shop.getInitStep().getId() ) )
+			if( order.getProcesses().get( 0 ).getStep().getId().equals( shop.getInitStep().getId() ) )
 			{
 				/* 是否自营店 */
 				Boolean isSelfRunShop = shop.getType() == 0 ? true : false;
@@ -2056,14 +2060,14 @@ public class OrderService
 				BigDecimal subtotal = new BigDecimal( 0 );
 
 				/* 如果指定了订购数量为 0 则意思是删除现有订单详情，就不需要获取传入的订单详情的信息 */
-				if ( dtoOrder.getQty_total_item_ordered() == null ||
+				if( dtoOrder.getQty_total_item_ordered() == null ||
 					( dtoOrder.getQty_total_item_ordered() != null && dtoOrder.getQty_total_item_ordered() != 0 ) )
 				{
 					/* 如果有传入订单详情 */
-					if ( dtoOrder.getOrder_items() != null && dtoOrder.getOrder_items().size() > 0 )
+					if( dtoOrder.getOrder_items() != null && dtoOrder.getOrder_items().size() > 0 )
 					{
 						/* 如果订单本身没有详情 */
-						if ( order.getItems() == null )
+						if( order.getItems() == null )
 						{
 							order.setItems( new ArrayList< OrderItem >() );
 						}
@@ -2071,15 +2075,15 @@ public class OrderService
 						 * 如果订单本身有详情，则与传入的订单详情做匹配，如果有 sku
 						 * 匹配，则将传入的详情的数据更新至数据库获取的订单详情，并将对应的传入订单详情从 list 中移除
 						 */
-						else if ( order.getItems().size() > 0 )
+						else if( order.getItems().size() > 0 )
 						{
-							for ( OrderItem orderItem : order.getItems() )
+							for( OrderItem orderItem : order.getItems() )
 							{
 								Iterator< DTO_OrderItem > dtoOrderItem = dtoOrder.getOrder_items().iterator();
-								while ( dtoOrderItem.hasNext() )
+								while( dtoOrderItem.hasNext() )
 								{
 									DTO_OrderItem dtoOrderItemIter = dtoOrderItem.next();
-									if ( dtoOrderItemIter.getSku().equals( orderItem.getSku() ) )
+									if( dtoOrderItemIter.getSku().equals( orderItem.getSku() ) )
 									{
 										orderItem.setExternalSku( dtoOrderItemIter.getShop_product_sku() );
 										orderItem.setExternal_name( dtoOrderItemIter.getShop_product_name() );
@@ -2091,7 +2095,7 @@ public class OrderService
 							}
 						}
 
-						for ( DTO_OrderItem dtoOrderItem : dtoOrder.getOrder_items() )
+						for( DTO_OrderItem dtoOrderItem : dtoOrder.getOrder_items() )
 						{
 							OrderItem orderItem = new OrderItem();
 
@@ -2112,7 +2116,7 @@ public class OrderService
 							query.setParameter( 1, shop.getId() );
 							query.setParameter( 2, dtoOrderItem.getSku() );
 
-							if ( ! query.getResultList().isEmpty() )
+							if( ! query.getResultList().isEmpty() )
 							{
 								Product product = ( Product ) query.getSingleResult();
 
@@ -2122,10 +2126,10 @@ public class OrderService
 
 								// 如果 Item 没有指定价格，根据 sku 查对应的 product，没有找到对应的
 								// product 则返回错误信息并停止处理，如果在产品表里找到多个价位？
-								if ( dtoOrderItem.getUnit_price() == null || dtoOrderItem.getUnit_price().equals( 0 ) )
+								if( dtoOrderItem.getUnit_price() == null || dtoOrderItem.getUnit_price().equals( 0 ) )
 								{
 									/* 是否自营 */
-									if ( isSelfRunShop )
+									if( isSelfRunShop )
 									{
 										/***
 										 * 
@@ -2137,7 +2141,7 @@ public class OrderService
 									else
 									{
 										/* 给订单详情指定合作店铺所对应的产品价位 */
-										switch ( shop.getPriceLevel() )
+										switch( shop.getPriceLevel() )
 										{
 											case 1 :
 												dtoOrderItem.setUnit_price( product.getPriceL1() );
@@ -2195,7 +2199,7 @@ public class OrderService
 						}
 					}
 
-					if ( isSkuMatched )
+					if( isSkuMatched )
 					{
 						dtoOrder.setWeight( weight );
 						/* 订单总金额 = 商品金额(subtotal) + 运费(shipping_fee) */
@@ -2228,91 +2232,91 @@ public class OrderService
 				order.setQtyTotalItemOrdered( dtoOrder.getQty_total_item_ordered() );
 
 				/* 将所有从API传入的非空值更新到数据库取出的订单中 */
-				if ( dtoOrder.getOrder_sn() != null && ! dtoOrder.getOrder_sn().trim().equals( "" ) )
+				if( dtoOrder.getOrder_sn() != null && ! dtoOrder.getOrder_sn().trim().equals( "" ) )
 				{
 					order.setExternalSn( dtoOrder.getOrder_sn() );
 				}
-				if ( dtoOrder.getMemo() != null && ! dtoOrder.getMemo().trim().equals( "" ) )
+				if( dtoOrder.getMemo() != null && ! dtoOrder.getMemo().trim().equals( "" ) )
 				{
 					order.setMemo( dtoOrder.getMemo() );
 				}
-				if ( dtoOrder.getGrand_total() != null &&
+				if( dtoOrder.getGrand_total() != null &&
 					( dtoOrder.getGrand_total().compareTo( BigDecimal.ZERO ) > 0 ) )
 				{
 					order.setGrandTotal( dtoOrder.getGrand_total() );
 				}
-				if ( dtoOrder.getSubtotal() != null && ( dtoOrder.getSubtotal().compareTo( BigDecimal.ZERO ) > 0 ) )
+				if( dtoOrder.getSubtotal() != null && ( dtoOrder.getSubtotal().compareTo( BigDecimal.ZERO ) > 0 ) )
 				{
 					order.setSubtotal( dtoOrder.getSubtotal() );
 				}
-				if ( dtoOrder.getTax() != null && ( dtoOrder.getTax().compareTo( BigDecimal.ZERO ) > 0 ) )
+				if( dtoOrder.getTax() != null && ( dtoOrder.getTax().compareTo( BigDecimal.ZERO ) > 0 ) )
 				{
 					order.setTax( dtoOrder.getTax() );
 				}
-				if ( dtoOrder.getTotal_invoiced() != null &&
+				if( dtoOrder.getTotal_invoiced() != null &&
 					( dtoOrder.getTotal_invoiced().compareTo( BigDecimal.ZERO ) > 0 ) )
 				{
 					order.setTotalInvoiced( dtoOrder.getTotal_invoiced() );
 				}
-				if ( dtoOrder.getWeight() != null && dtoOrder.getWeight() > 0 )
+				if( dtoOrder.getWeight() != null && dtoOrder.getWeight() > 0 )
 				{
 					order.setWeight( dtoOrder.getWeight() );
 				}
-				if ( dtoOrder.getSender_name() != null && ! dtoOrder.getSender_name().trim().equals( "" ) )
+				if( dtoOrder.getSender_name() != null && ! dtoOrder.getSender_name().trim().equals( "" ) )
 				{
 					order.setSenderName( dtoOrder.getSender_name() );
 				}
-				if ( dtoOrder.getSender_address() != null && ! dtoOrder.getSender_address().trim().equals( "" ) )
+				if( dtoOrder.getSender_address() != null && ! dtoOrder.getSender_address().trim().equals( "" ) )
 				{
 					order.setSenderAddress( dtoOrder.getSender_address() );
 				}
-				if ( dtoOrder.getSender_phone() != null && ! dtoOrder.getSender_phone().trim().equals( "" ) )
+				if( dtoOrder.getSender_phone() != null && ! dtoOrder.getSender_phone().trim().equals( "" ) )
 				{
 					order.setSenderPhone( dtoOrder.getSender_phone() );
 				}
-				if ( dtoOrder.getSender_email() != null && ! dtoOrder.getSender_email().trim().equals( "" ) )
+				if( dtoOrder.getSender_email() != null && ! dtoOrder.getSender_email().trim().equals( "" ) )
 				{
 					order.setSenderEmail( dtoOrder.getSender_email() );
 				}
-				if ( dtoOrder.getSender_post() != null && ! dtoOrder.getSender_post().trim().equals( "" ) )
+				if( dtoOrder.getSender_post() != null && ! dtoOrder.getSender_post().trim().equals( "" ) )
 				{
 					order.setSenderPost( dtoOrder.getSender_post() );
 				}
-				if ( dtoOrder.getReceive_name() != null && ! dtoOrder.getReceive_name().trim().equals( "" ) )
+				if( dtoOrder.getReceive_name() != null && ! dtoOrder.getReceive_name().trim().equals( "" ) )
 				{
 					order.setReceiveName( dtoOrder.getReceive_name() );
 				}
-				if ( dtoOrder.getReceive_phone() != null && ! dtoOrder.getReceive_phone().trim().equals( "" ) )
+				if( dtoOrder.getReceive_phone() != null && ! dtoOrder.getReceive_phone().trim().equals( "" ) )
 				{
 					order.setReceivePhone( dtoOrder.getReceive_phone() );
 				}
-				if ( dtoOrder.getReceive_email() != null && ! dtoOrder.getReceive_email().trim().equals( "" ) )
+				if( dtoOrder.getReceive_email() != null && ! dtoOrder.getReceive_email().trim().equals( "" ) )
 				{
 					order.setReceiveEmail( dtoOrder.getReceive_email() );
 				}
-				if ( dtoOrder.getReceive_country() != null && ! dtoOrder.getReceive_country().trim().equals( "" ) )
+				if( dtoOrder.getReceive_country() != null && ! dtoOrder.getReceive_country().trim().equals( "" ) )
 				{
 					order.setReceiveCountry( dtoOrder.getReceive_country() );
 				}
-				if ( dtoOrder.getReceive_province() != null && ! dtoOrder.getReceive_province().trim().equals( "" ) )
+				if( dtoOrder.getReceive_province() != null && ! dtoOrder.getReceive_province().trim().equals( "" ) )
 				{
 					order.setReceiveProvince( dtoOrder.getReceive_province() );
 				}
-				if ( dtoOrder.getReceive_city() != null && ! dtoOrder.getReceive_city().trim().equals( "" ) )
+				if( dtoOrder.getReceive_city() != null && ! dtoOrder.getReceive_city().trim().equals( "" ) )
 				{
 					order.setReceiveCity( dtoOrder.getReceive_city() );
 				}
-				if ( dtoOrder.getReceive_address() != null && ! dtoOrder.getReceive_address().trim().equals( "" ) )
+				if( dtoOrder.getReceive_address() != null && ! dtoOrder.getReceive_address().trim().equals( "" ) )
 				{
 					order.setReceiveAddress( dtoOrder.getReceive_address() );
 				}
-				if ( dtoOrder.getReceive_post() != null && ! dtoOrder.getReceive_post().trim().equals( "" ) )
+				if( dtoOrder.getReceive_post() != null && ! dtoOrder.getReceive_post().trim().equals( "" ) )
 				{
 					order.setReceivePost( dtoOrder.getReceive_post() );
 				}
-				if ( dtoOrder.getDelivery_method() != null && ! dtoOrder.getDelivery_method().trim().equals( "" ) )
+				if( dtoOrder.getDelivery_method() != null && ! dtoOrder.getDelivery_method().trim().equals( "" ) )
 				{
-					switch ( dtoOrder.getDelivery_method() )
+					switch( dtoOrder.getDelivery_method() )
 					{
 						case "快递" :
 							order.setDeliveryMethod( 1 );
@@ -2336,9 +2340,9 @@ public class OrderService
 				com.sooeez.ecomm.domain.Process process = this.processService
 					.getProcess( order.getProcesses().get( 0 ).getProcess().getId() );
 				processName = process.getName();
-				for ( ProcessStep ps : process.getSteps() )
+				for( ProcessStep ps : process.getSteps() )
 				{
-					if ( ps.getId().equals( order.getProcesses().get( 0 ).getStep().getId() ) )
+					if( ps.getId().equals( order.getProcesses().get( 0 ).getStep().getId() ) )
 					{
 						processStepName = ps.getName();
 					}
@@ -2379,7 +2383,7 @@ public class OrderService
 		query.setParameter( 2, orderId );
 		query.setParameter( 3, orderSn );
 
-		if ( ! query.getResultList().isEmpty() )
+		if( ! query.getResultList().isEmpty() )
 		{
 			Order order = ( Order ) query.getSingleResult();
 
@@ -2389,19 +2393,19 @@ public class OrderService
 			 * 
 			 */
 			Boolean isOrderInitialed = false;
-			if ( order.getProcesses() != null && order.getProcesses().size() > 0 )
+			if( order.getProcesses() != null && order.getProcesses().size() > 0 )
 			{
-				for ( ObjectProcess op : order.getProcesses() )
+				for( ObjectProcess op : order.getProcesses() )
 				{
 					/* 如果订单流程状态处在初始化阶段 */
-					if ( op.getStep() != null && op.getStep().getId().equals( shop.getInitStep().getId() ) )
+					if( op.getStep() != null && op.getStep().getId().equals( shop.getInitStep().getId() ) )
 					{
 						isOrderInitialed = true;
 					}
 				}
 			}
 			/* 如果订单流程状态处在初始化阶段，也就是未处理阶段，那么就可以进行删改操作 */
-			if ( isOrderInitialed )
+			if( isOrderInitialed )
 			{
 				/* 将订单是否删除更新成 true */
 				order.setDeleted( true );

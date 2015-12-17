@@ -457,12 +457,12 @@ angular.module('ecommApp')
          */
         $scope.printDistributedOrders = function()
         {
-            if( $scope.shipments && $scope.shipments.length > 0 )
+            if( $scope.page.content && $scope.page.content.length > 0 )
             {
                 var orderIds = [];
-                $.each( $scope.shipments, function()
+                $.each( $scope.page.content, function()
                 {
-                    orderIds.push( this.id );
+                    orderIds.push( this.orderId );
                 });
 
                 $window.open( '/#/order-print?orderId=' + ( orderIds || '') );
@@ -471,6 +471,28 @@ angular.module('ecommApp')
             {
                 toastr.warning('没有可以打印的配货单');
             }
+        };
+
+        /** 打印快递单
+         */
+        $scope.printShipmentCouriers = function()
+        {
+            var ids = [];
+            if( $scope.shipments && $scope.shipments.length > 0 )
+            {
+                var shipments = $scope.shipments;
+                for( var shipmentIndex in shipments )
+                {
+                    if( shipments[ shipmentIndex ].isSelected )
+                    {
+                        ids.push( shipments[ shipmentIndex].id );
+                    }
+                }
+            }
+            console.log( 'ids: ' );
+            console.log( ids );
+
+
         };
 
         /** 锁定/解锁同品更名

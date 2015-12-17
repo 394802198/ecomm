@@ -1,33 +1,36 @@
 package com.sooeez.ecomm.service;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.criteria.Predicate;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.ClientAnchor;
-import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.util.IOUtils;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -333,31 +336,11 @@ public class PurchaseOrderService
 					? item.getSupplierProduct().getSupplierProductName() : "";
 
 				/*
-				 * 设置图片
-				 */
-				// InputStream inputStream = new URL(
-				// "http://i.stack.imgur.com/hEobN.jpg" ).openStream();
-				File imageFile = new File( "src/maim/resources/hEobN.jpg" );
-				InputStream inputStream = new FileInputStream( imageFile );
-				byte[] imageBytes = IOUtils.toByteArray( inputStream );
-				int pictureureIdx = workbook.addPicture( imageBytes, Workbook.PICTURE_TYPE_JPEG );
-				inputStream.close();
-
-				CreationHelper helper = workbook.getCreationHelper();
-				Drawing drawing = sheet.createDrawingPatriarch();
-				ClientAnchor anchor = helper.createClientAnchor();
-				anchor.setAnchorType( ClientAnchor.MOVE_AND_RESIZE );
-
-				anchor.setCol1( 0 );
-				anchor.setRow1( i + 12 );
-				drawing.createPicture( anchor, pictureureIdx );
-
-				/*
 				 * Code( supplier_product_code ), Description(
 				 * supplier_product_name ) 居左
 				 */
-				setCell( contactContentRow, itemContentLeftStyle, code, 1 );
-				setCell( contactContentRow, itemContentLeftStyle, description, 2 );
+				setCell( contactContentRow, itemContentLeftStyle, code, 0 );
+				setCell( contactContentRow, itemContentLeftStyle, description, 1 );
 
 				/*
 				 * Chinese Name( short_name ), size( 留空 ), Barcode(
@@ -387,15 +370,15 @@ public class PurchaseOrderService
 				BigDecimal subTotal = excGST.multiply( new BigDecimal( purchaseQty ) );
 				String total = subTotal.toString().substring( 0, subTotal.toString().indexOf( "." ) + 3 );
 
-				setCell( contactContentRow, itemContentCenterStyle, chineseName, 3 );
-				setCell( contactContentRow, itemContentCenterStyle, size, 4 );
-				setCell( contactContentRow, itemContentCenterStyle, barcode, 5 );
-				setCell( contactContentRow, itemContentCenterStyle, rrp_inc, 6 );
-				setCell( contactContentRow, itemContentCenterStyle, std_w_s_exc, 7 );
-				setCell( contactContentRow, itemContentRedFontCenterStyle, std_w_s_inc, 8 );
-				setCell( contactContentRow, itemContentYellowBGCenterStyle, order_qty, 9 );
-				setCell( contactContentRow, itemContentCenterStyle, carton_size, 10 );
-				setCell( contactContentRow, itemContentCenterStyle, total, 11 );
+				setCell( contactContentRow, itemContentCenterStyle, chineseName, 2 );
+				setCell( contactContentRow, itemContentCenterStyle, size, 3 );
+				setCell( contactContentRow, itemContentCenterStyle, barcode, 4 );
+				setCell( contactContentRow, itemContentCenterStyle, rrp_inc, 5 );
+				setCell( contactContentRow, itemContentCenterStyle, std_w_s_exc, 6 );
+				setCell( contactContentRow, itemContentRedFontCenterStyle, std_w_s_inc, 7 );
+				setCell( contactContentRow, itemContentYellowBGCenterStyle, order_qty, 8 );
+				setCell( contactContentRow, itemContentCenterStyle, carton_size, 9 );
+				setCell( contactContentRow, itemContentCenterStyle, total, 10 );
 
 				totalExcGST = totalExcGST.add( subTotal );
 			}
@@ -498,6 +481,10 @@ public class PurchaseOrderService
 				{
 					e.printStackTrace();
 				}
+			}
+			if( purchaseOrder.getPurchaseOrderIds() != null && purchaseOrder.getPurchaseOrderIds().size() > 0 )
+			{
+				predicates.add( cb.in( root.get( "id" ) ).value( purchaseOrder.getPurchaseOrderIds() ) );
 			}
 			// if (order.getStatusIds() != null) {
 			// Subquery<ObjectProcess> objectProcessSubquery =

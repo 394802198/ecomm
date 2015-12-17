@@ -29,6 +29,19 @@ angular.module('ecommApp')
             data: {
                 roles: [ROLES.SYSTEM_ADMIN, ROLES.SHIPMENT_ADMIN]
             }
+        })
+        .state('shipment.courierPrint', {
+            parent: 'site',
+            url: '/shipment-courier-print',
+            views: {
+                'content@': {
+                    templateUrl: 'views/procurement/shipment-courier.print.html?' + t,
+                    controller: 'ShipmentCourierPrintController'
+                }
+            },
+            data: {
+                roles: [ROLES.SYSTEM_ADMIN, ROLES.SHIPMENT_ADMIN]
+            }
         });
         //.state('shipment.shipmentImport', {
         //    url: '/shipment-import',

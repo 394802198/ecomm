@@ -74,7 +74,7 @@ public class ImportOrderFromMDD
 		/*
 		 * 获取指定仓库的订单
 		 */
-		for ( Long state : status )
+		for( Long state : status )
 		{
 			/*
 			 * 调用订单编号列表 API
@@ -89,32 +89,32 @@ public class ImportOrderFromMDD
 			/*
 			 * 如果调用成功，则获得所有订单编号
 			 */
-			if ( orderList.getSuccessCode().equals( RespondCode.SUCCESS_TRUE ) )
+			if( orderList.getSuccessCode().equals( RespondCode.SUCCESS_TRUE ) )
 			{
 				/*
 				 * 如果有订单编号，则获取订单及详情信息
 				 */
-				if ( orderList.getContentMap() != null && orderList.getContentMap().size() > 0 )
+				if( orderList.getContentMap() != null && orderList.getContentMap().size() > 0 )
 				{
 					List< OrderInfo > orderInfos = new ArrayList< OrderInfo >();
 
-					for ( Map< String, Object > map : orderList.getContentMap() )
+					for( Map< String, Object > map : orderList.getContentMap() )
 					{
-						Long externalSn = ( Long ) map.get( "order_id" );
+						Long externalId = ( Long ) map.get( "order_id" );
 						Long externalLogTime = ( Long ) map.get( "log_time" );
 						/*
 						 * 如果［没匹配到］或［外部订单日志时间］不一致，则该订单需要被插入或更新至数据库
 						 */
 						Boolean isNotExistedOrUpdated = false;
 						Order finalOrder = null;
-						String sqlOrder = "SELECT * FROM t_order WHERE external_sn = ?1";
+						String sqlOrder = "SELECT * FROM t_order WHERE external_id = ?1";
 						Query queryOrder = em.createNativeQuery( sqlOrder, Order.class );
-						queryOrder.setParameter( 1, externalSn );
+						queryOrder.setParameter( 1, externalId );
 
 						/*
 						 * 如果存在该订单
 						 */
-						if ( queryOrder.getResultList().size() > 0 )
+						if( queryOrder.getResultList().size() > 0 )
 						{
 							// Order order = ( Order )
 							// queryOrder.getSingleResult();
@@ -137,11 +137,11 @@ public class ImportOrderFromMDD
 							isNotExistedOrUpdated = true;
 						}
 
-						if ( isNotExistedOrUpdated )
+						if( isNotExistedOrUpdated )
 						{
 							EcommHttp orderInfoHttp = new EcommHttp();
 							orderInfoHttp.getParamsMap().put( "url", "http://www.mdd.co.nz/mddAPI/OrderInfo.php" );
-							orderInfoHttp.getParamsMap().put( "order_id", externalSn );
+							orderInfoHttp.getParamsMap().put( "order_id", externalId );
 							/*
 							 * 默认获取非预订订单
 							 */
@@ -158,7 +158,7 @@ public class ImportOrderFromMDD
 					/**
 					 * 开始：初始化订单及详情信息
 					 */
-					if ( orderInfos != null && orderInfos.size() > 0 )
+					if( orderInfos != null && orderInfos.size() > 0 )
 					{
 						Shop mddShop = this.shopService.getShop( 2L );
 
@@ -169,7 +169,7 @@ public class ImportOrderFromMDD
 						Currency rmbCurrency = new Currency();
 						rmbCurrency.setId( 101L );
 
-						for ( OrderInfo orderInfo : orderInfos )
+						for( OrderInfo orderInfo : orderInfos )
 						{
 							/*
 							 * 如果该订单任意一个详情的 sku 不存在于 Ecomm 中，则不予以导入
@@ -179,7 +179,7 @@ public class ImportOrderFromMDD
 							Boolean isDeliveryMethodCorrect = true;
 
 							Order order = orderInfo.getOrder() != null ? orderInfo.getOrder() : new Order();
-							if ( orderInfo.getOrder() == null )
+							if( orderInfo.getOrder() == null )
 							{
 								order.setShop( mddShop );
 								order.setId( orderInfo.getEcommOrderId() );
@@ -190,11 +190,11 @@ public class ImportOrderFromMDD
 							processQuery.setObjectType( 1 );
 							processQuery.setEnabled( true );
 							List< Process > processes = processService.getProcesses( processQuery, null );
-							if ( processes != null && processes.size() > 0 )
+							if( processes != null && processes.size() > 0 )
 							{
-								for ( Process process : processes )
+								for( Process process : processes )
 								{
-									if ( process.getAutoApply() == true )
+									if( process.getAutoApply() == true )
 									{
 										ProcessStep finalStep = null;
 										ProcessStep deployStep = order.getShop().getDeployStep();
@@ -202,7 +202,7 @@ public class ImportOrderFromMDD
 										/*
 										 * 仓库中转
 										 */
-										if ( state.equals( OrderStatus.WAREHOUSE_TRANSIT ) )
+										if( state.equals( OrderStatus.WAREHOUSE_TRANSIT ) )
 										{
 											finalStep = order.getShop().getDeployStep();
 										}
@@ -217,11 +217,11 @@ public class ImportOrderFromMDD
 										/*
 										 * 如果订单有流程，则不是新订单
 										 */
-										if ( order.getProcesses() != null && order.getProcesses().size() > 0 )
+										if( order.getProcesses() != null && order.getProcesses().size() > 0 )
 										{
-											for ( ObjectProcess op : order.getProcesses() )
+											for( ObjectProcess op : order.getProcesses() )
 											{
-												if ( op.getStep().getId().equals( deployStep.getId() ) &&
+												if( op.getStep().getId().equals( deployStep.getId() ) &&
 													op.getStep().getId().equals( initStep.getId() ) )
 												{
 													this.objectProcessRepository.updateStepId( finalStep.getId(),
@@ -255,14 +255,14 @@ public class ImportOrderFromMDD
 
 							List< OrderItem > orderItems = new ArrayList< OrderItem >();
 
-							if ( orderInfo.getGoods() != null && orderInfo.getGoods().size() > 0 )
+							if( orderInfo.getGoods() != null && orderInfo.getGoods().size() > 0 )
 							{
-								for ( OrderGood orderGood : orderInfo.getGoods() )
+								for( OrderGood orderGood : orderInfo.getGoods() )
 								{
 									/*
 									 * 如果 Sku 以 FTD 或 HAZY 或 PA 开头，则不导入
 									 */
-									if ( orderGood.getGoodsSn() != null &&
+									if( orderGood.getGoodsSn() != null &&
 										! orderGood.getGoodsSn().trim().equals( "" ) &&
 										( orderGood.getGoodsSn().startsWith( "FTD" ) ||
 											orderGood.getGoodsSn().startsWith( "HAZY" ) ||
@@ -284,7 +284,7 @@ public class ImportOrderFromMDD
 									String sqlProduct = "SELECT * FROM t_product WHERE sku = ?1 AND enabled = true";
 									Query queryProduct = em.createNativeQuery( sqlProduct, Product.class );
 									queryProduct.setParameter( 1, orderItem.getSku() );
-									if ( queryProduct.getResultList().size() > 0 )
+									if( queryProduct.getResultList().size() > 0 )
 									{
 										// Integer totalStock = 0;
 										Product product = ( Product ) queryProduct.getSingleResult();
@@ -301,18 +301,18 @@ public class ImportOrderFromMDD
 									/*
 									 * 如果找到 sku 对应的商品
 									 */
-									if ( isAvailable )
+									if( isAvailable )
 									{
 										/* Accumulate total weight */
 										weight += orderItem.getQtyOrdered() * orderItem.getUnitWeight();
 
-										if ( orderItem.getQtyOrdered() != null )
+										if( orderItem.getQtyOrdered() != null )
 										{
 											/* Accumulate total items ordered */
 											qtyTotalItemOrdered += orderItem.getQtyOrdered();
 										}
 
-										if ( orderItem.getQtyOrdered() != null && orderItem.getUnitPrice() != null )
+										if( orderItem.getQtyOrdered() != null && orderItem.getUnitPrice() != null )
 										{
 											/* Accumulate grand total */
 											grandTotal = grandTotal.add( orderItem.getUnitPrice()
@@ -335,7 +335,7 @@ public class ImportOrderFromMDD
 										/*
 										 * 如果还是 真，则标为 假
 										 */
-										if ( isAllItemSkuFoundInEcommProduct )
+										if( isAllItemSkuFoundInEcommProduct )
 										{
 											isAllItemSkuFoundInEcommProduct = false;
 										}
@@ -345,11 +345,11 @@ public class ImportOrderFromMDD
 									// suppliers_id 供货商ID
 								}
 
-								if ( order.getShippingFee() != null )
+								if( order.getShippingFee() != null )
 								{
 									grandTotal = grandTotal.add( order.getShippingFee() );
 								}
-								if ( order.getSubtotal() != null )
+								if( order.getSubtotal() != null )
 								{
 									/* *3/23 */
 									tax = order.getSubtotal().multiply( new BigDecimal( 3 ) )
@@ -370,14 +370,15 @@ public class ImportOrderFromMDD
 							/*
 							 * 其他信息
 							 */
-							if ( orderInfo.getAddTime() != null )
+							if( orderInfo.getAddTime() != null )
 							{
 								order.setExternalCreateTime( orderInfo.getAddTime() );
 							}
 							order.setExternalLogTime( orderInfo.getLogTime() );
 							order.setInternalCreateTime( new Date() );
 							order.setLastUpdateTime( new Date() );
-							order.setExternalSn( String.valueOf( orderInfo.getOrderId() ) );
+							order.setExternalId( Long.valueOf( orderInfo.getOrderId() ) );
+							order.setExternalSn( orderInfo.getOrderSn() );
 							order.setShippingDescription( orderInfo.getShippingName() );
 							order.setShippingFee( orderInfo.getShippingFee() );
 
@@ -385,21 +386,21 @@ public class ImportOrderFromMDD
 							// 新西兰快递: contains( 新西兰-新西兰 ) && contains( 快递邮寄 )
 							// 自取: contains( 新西兰-新西兰 ) && contains( 自己取货 )
 							// 送货上门: contains( 新西兰-新西兰 ) && contains( 送货上门 )
-							if ( orderInfo.getShippingName() != null &&
+							if( orderInfo.getShippingName() != null &&
 								! orderInfo.getShippingName().trim().equals( "" ) )
 							{
-								if ( orderInfo.getShippingName().contains( "新西兰-中国" ) ||
+								if( orderInfo.getShippingName().contains( "新西兰-中国" ) ||
 									( orderInfo.getShippingName().contains( "新西兰-新西兰" ) &&
 										orderInfo.getShippingName().contains( "快递邮寄" ) ) )
 								{
 									order.setDeliveryMethod( 1 );
 								}
-								else if ( orderInfo.getShippingName().contains( "新西兰-新西兰" ) &&
+								else if( orderInfo.getShippingName().contains( "新西兰-新西兰" ) &&
 									orderInfo.getShippingName().contains( "自己取货" ) )
 								{
 									order.setDeliveryMethod( 2 );
 								}
-								else if ( orderInfo.getShippingName().contains( "新西兰-新西兰" ) &&
+								else if( orderInfo.getShippingName().contains( "新西兰-新西兰" ) &&
 									orderInfo.getShippingName().contains( "送货上门" ) )
 								{
 									order.setDeliveryMethod( 3 );
@@ -414,15 +415,15 @@ public class ImportOrderFromMDD
 							order.setReceivePhone( orderInfo.getTel() + ", " + orderInfo.getMobile() );
 							order.setReceiveEmail( orderInfo.getEmail() );
 							order.setReceiveAddress( orderInfo.getAddress() );
-							if ( orderInfo.getZipcode() != null )
+							if( orderInfo.getZipcode() != null )
 							{
 								order.setReceivePost( String.valueOf( orderInfo.getZipcode() ) );
 							}
 
-							if ( orderInfo.getBiz() != null && ! orderInfo.getBiz().equals( "" ) )
+							if( orderInfo.getBiz() != null && ! orderInfo.getBiz().equals( "" ) )
 							{
 								Integer currency = orderInfo.getBiz().intValue();
-								switch ( currency )
+								switch( currency )
 								{
 									case 0 :
 										order.setCurrency( nzdCurrency );
@@ -455,7 +456,7 @@ public class ImportOrderFromMDD
 							// isAllItemSkuFoundInEcommProduct );
 							// System.out.println( "isDeliveryMethodCorrect: " +
 							// isDeliveryMethodCorrect );
-							if ( isAllItemSkuFoundInEcommProduct &&
+							if( isAllItemSkuFoundInEcommProduct &&
 								isDeliveryMethodCorrect && ! isSkuStartsWithFTDOrHAZYOrPA )
 							{
 								finalOrders.add( order );
@@ -478,7 +479,7 @@ public class ImportOrderFromMDD
 		/*
 		 * 更新或插入订单
 		 */
-		if ( finalOrders.size() > 0 )
+		if( finalOrders.size() > 0 )
 		{
 			this.orderRepository.save( finalOrders );
 			// System.out.println( "可导入的订单：" + ( finalOrders != null ?

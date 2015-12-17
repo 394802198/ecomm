@@ -82,8 +82,7 @@
                     <th style="padding: 2px">
                         <select class="form-control input-sm" ng-change="batchManipulation()" ng-model="batchManipulationValue">
                             <option selected="selected" value="batchManipulation">批量操作</option>
-                            <option value="shipmentExport">导出</option>
-                            <option value="shipmentPrint">打印</option>
+                            <option value="purchaseOrderPrint">打印</option>
                             <option value="purchaseOrderObsolete">作废</option>
                         </select>
                     </th>
@@ -210,10 +209,14 @@
                             <span class="glyphicon glyphicon-edit"></span>
                             编辑
                         </a>
-                        <a ng-href="/api/purchaseOrder/export?id={{ purchaseOrder.id }}" class="btn btn-xs btn-info">
+                        <a ng-click="printSingle( purchaseOrder.id )" class="btn btn-xs btn-info">
                             <span class="glyphicon glyphicon-save-file"></span>
-                            导出
+                            打印
                         </a>
+                        <!--<a ng-href="/api/purchaseOrder/export?id={{ purchaseOrder.id }}" class="btn btn-xs btn-info">-->
+                            <!--<span class="glyphicon glyphicon-save-file"></span>-->
+                            <!--导出-->
+                        <!--</a>-->
                         <!-- 已收货，则不能被作废 -->
                         <a class="btn btn-danger btn-xs" ng-hide="purchaseOrder.status == 2 || purchaseOrder.status == 3" ng-click="showObsoletePurchaseOrderModal( purchaseOrder )">作废</a>
                     </td>

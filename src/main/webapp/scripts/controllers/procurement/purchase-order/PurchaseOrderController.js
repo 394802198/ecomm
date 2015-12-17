@@ -1,7 +1,7 @@
 angular.module('ecommApp')
 
-.controller('PurchaseOrderController', ['$scope', '$rootScope', 'toastr', 'Warehouse', 'Supplier', 'User', 'Utils', 'purchaseOrderService',
-    function($scope, $rootScope, toastr, Warehouse, Supplier, User, Utils, purchaseOrderService) {
+.controller('PurchaseOrderController', ['$scope', '$rootScope', '$location', 'toastr', 'Warehouse', 'Supplier', 'User', 'Utils', 'purchaseOrderService',
+    function($scope, $rootScope, $location, toastr, Warehouse, Supplier, User, Utils, purchaseOrderService) {
 
         $scope.template = {
             //shipmentComplete: {
@@ -139,12 +139,13 @@ angular.module('ecommApp')
             {
                 if($scope.batchManipulationValue === 'purchaseOrderExport')
                 {
-                    window.location.href = '/api/purchase-order/export?ids=' + ids;
-                    toastr.info('批量导出采购单');
+                    //window.location.href = '/api/purchase-order/export?ids=' + ids;
+                    //toastr.info('批量导出采购单');
                 }
                 else if($scope.batchManipulationValue === 'purchaseOrderPrint')
                 {
-                    toastr.info('采购单打印！');
+                    var url = '/purchase-order-print?purchaseOrderId=' +( ids || '');
+                    $location.url( url );
                 }
                 else if($scope.batchManipulationValue === 'purchaseOrderObsolete')
                 {
@@ -221,6 +222,12 @@ angular.module('ecommApp')
 
             $('#obsoletePurchaseOrders').modal('hide');
             toastr.error('作废批量选中的发货单！');
+        };
+
+        $scope.printSingle = function( purchaseOrderId )
+        {
+            var url = '/purchase-order-print?purchaseOrderId=' +( purchaseOrderId || '');
+            $location.url( url );
         };
 
     }
