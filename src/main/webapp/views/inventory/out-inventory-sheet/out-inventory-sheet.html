@@ -81,13 +81,13 @@
                         <th width="12%">创建人</th>
                         <th width="12%">出库人</th>
                         <th width="14%" style="padding: 2px">
-                            <select class="form-control input-sm">
+                            <!-- <select class="form-control input-sm">
                                 <option selected="selected">批量操作</option>
                                 <option>批量上架</option>
                                 <option>批量下架</option>
                                 <option>批量更名</option>
                                 <option>批量作废</option>
-                            </select>
+                            </select> -->
                         </th>
                     </tr>
                 </thead>
@@ -121,13 +121,9 @@
                             {{batch.executeOperator.username}}
                         </td>
                         <td>
-                            <a href="javascript:void(0)" class="btn btn-info btn-xs" ui-sref="outInventorySheet.operator({id:batch.id})" ng-switch on="batch.type">
-                                <span ng-switch-when="0">查看</span>
-                                <span ng-switch-when="1">完成</span>
-                                <span ng-switch-when="2">查看</span>
-                            </a>
-                            <a ng-href="/api/inventory-batches/download/{{batch.id}}" class="btn btn-info btn-xs">导出</a>
-                            <a href="javascript:void(0)" class="btn btn-info btn-xs">打印</a>
+                            <a href="javascript:void(0)" class="btn btn-info btn-xs" ui-sref="outInventorySheet.operator({id:batch.id})">查看</a>
+                            <a ng-href="/api/inventory-batches/download/{{batch.id}}" class="btn btn-info btn-xs" ng-show="batch.type == 1 && batch.nature != 'purchase'">导出</a>
+                            <!-- <a href="javascript:void(0)" class="btn btn-info btn-xs">打印</a> -->
                             <a href="javascript:void(0)" class="btn btn-danger btn-xs" ng-click="showTrashBatch(batch)" ng-show="batch.type == 1">作废</a>
                         </td>
                     </tr>
