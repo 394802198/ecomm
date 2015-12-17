@@ -12,7 +12,7 @@
                             <span class="glyphicon glyphicon-eye-open" ng-show="!order.show"></span>
                             <span class="glyphicon glyphicon-eye-close" ng-show="order.show"></span>
                         </a>
-                        <h3 class="panel-title">系统订单号: {{order.id}}</h3>
+                        <h3 class="panel-title">系统订单号: {{order.id}}, 外部订单号: {{order.externalSn}}</h3>
                     </div>
                     <table class="table table-bordered table-condensed" ng-show="order.show">
                         <thead>

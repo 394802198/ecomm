@@ -44,8 +44,8 @@
                                 </tr>
                                 <tr>
                                     <td colspan="2">
-                                        <a href="" class="btn btn-success" ng-click="toggleDetailsSlide(batch)">查看相关订单</a>
-                                        <a href="" class="btn btn-danger" ng-click="togglePurchaseDetailsSlide(batch)" ng-show="batch.nature == 'purchase'">生成临时采购单</a>
+                                        <a href="" class="btn btn-success" ng-click="toggleDetailsSlide(batch)" ng-hide="batch.type == 0">查看相关订单</a>
+                                        <a href="" class="btn btn-danger" ng-click="togglePurchaseDetailsSlide(batch)" ng-show="batch.nature == 'purchase' && batch.type != 0">生成临时采购单</a>
                                     </td>
                                 </tr>
                             </table>
@@ -73,6 +73,12 @@
             </div>
             <hr>
             <div class="panel-body">
+                <ng-form name="filterForm" class="form-horizontal">
+                    <label class="col-md-2 control-label">检索商品</label>
+                    <div class="col-md-4">
+                        <input type="text" ng-model="productSKU" class="form-control" placeholder="通过商品 SKU 检索" >
+                    </div>
+                </ng-form>
                 <table class="table table-condensed">
                     <thead>
                         <tr>
@@ -84,7 +90,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="product in products">
+                        <tr ng-repeat="product in products | filter: {sku: productSKU}">
                             <td>
                                 {{product.sku}}
                             </td>

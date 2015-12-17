@@ -87,56 +87,81 @@ public class DownloadController {
     	
     	// 初始化字体
     	HSSFFont font = wb.createFont();
-		font.setBold(true);
-		font.setFontName("宋体");
-		font.setFontHeightInPoints((short) 12);
+		//font.setBold(true);
+		font.setFontName(HSSFFont.FONT_ARIAL);
+		font.setFontHeightInPoints((short) 11);
     	
 		// 初始化样式
 		HSSFCellStyle style = wb.createCellStyle();
 		style.setFont(font);
 		style.setAlignment(CellStyle.ALIGN_JUSTIFY);
+		style.setBorderTop(HSSFCellStyle.BORDER_THIN);
+		style.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+		style.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+		style.setBorderRight(HSSFCellStyle.BORDER_THIN);
+		
+		// 初始化商品单元格字体
+    	HSSFFont fontProduct = wb.createFont();
+    	fontProduct.setFontName(HSSFFont.FONT_ARIAL);
+    	fontProduct.setFontHeightInPoints((short) 10);
+    	
+		// 初始化商品单元格样式
+		HSSFCellStyle styleProduct = wb.createCellStyle();
+		styleProduct.setFont(fontProduct);
+		styleProduct.setAlignment(CellStyle.ALIGN_JUSTIFY);
+		styleProduct.setBorderTop(HSSFCellStyle.BORDER_THIN);
+		styleProduct.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+		styleProduct.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+		styleProduct.setBorderRight(HSSFCellStyle.BORDER_THIN);
+		
 
     	// 第一个工作表
     	HSSFSheet sheet = wb.getSheetAt(0);
     	
-    	// 出库单号
+    	// 出库单打印日期
     	HSSFCell cell = sheet.getRow(0).createCell(1);
+    	cell.setCellStyle(style);
+    	cell.setCellValue(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
+    	
+    	// 出库单号
+    	cell = sheet.getRow(1).createCell(1);
     	cell.setCellStyle(style);
     	cell.setCellValue(batch.getId().longValue());
     	
     	// 仓库
-    	cell = sheet.getRow(1).createCell(1);
+    	cell = sheet.getRow(2).createCell(1);
     	cell.setCellStyle(style);
     	cell.setCellValue(batch.getWarehouse().getName());
     	
     	// 应出库商品总件数
-    	cell = sheet.getRow(3).createCell(1);
+    	cell = sheet.getRow(4).createCell(1);
     	cell.setCellStyle(style);
     	cell.setCellValue(Math.abs(batch.getTotal().longValue())); 
     	
     	// 备注
-    	if ("purchase".equals(batch.getNature())) {
-    		cell = sheet.getRow(0).createCell(3);
-        	cell.setCellStyle(style);
-        	cell.setCellValue("以下商品都是需要临时采购，库存不足。"); 
-    	}
+//    	if ("purchase".equals(batch.getNature())) {
+//    		cell = sheet.getRow(0).createCell(3);
+//        	cell.setCellStyle(style);
+//        	cell.setCellValue("以下商品都是需要临时采购，库存不足。"); 
+//    	}
     	
-    	
-    	int startRow = 5;
+    	int startRow = 6;
     	for(Product product: products) {
     		
     		HSSFRow row = createRowAndStyle(startRow, sheet, style);
     	
-    		// 设置sku
-    		row.getCell(0).setCellValue(product.getSku());
     		// 设置商品名称
-    		row.getCell(1).setCellValue(product.getName());
+    		row.getCell(0).setCellValue(product.getName());
+    		row.getCell(0).setCellStyle(styleProduct);
+    		
+    		// 设置sku
+    		row.getCell(2).setCellValue(product.getSku());
     		
     		for (int i = 0, len = product.getPositions().size(); i < len; i++) {
     			WarehousePosition position = product.getPositions().get(i);
     			if (i == 0) {
     				// 设置库位
-    				row.getCell(2).setCellValue(position.getName());
+    				row.getCell(1).setCellValue(position.getName());
     				// 设置应出库数量
     				row.getCell(3).setCellValue(Math.abs(position.getTotal().longValue()));
     				// 出库后应剩余库存
@@ -145,12 +170,14 @@ public class DownloadController {
     				} else {
         				row.getCell(4).setCellValue(position.getStock().longValue());
     				}
+    				// 实际出
+    				row.createCell(5).setCellStyle(styleProduct);
     				
     			} else {
     				startRow++;
     				row = createRowAndStyle(startRow, sheet, style);
     				// 设置库位
-    				row.getCell(2).setCellValue(position.getName());
+    				row.getCell(1).setCellValue(position.getName());
     				// 设置应出库数量
     				row.getCell(3).setCellValue(Math.abs(position.getTotal().longValue()));
     				// 出库后应剩余库存
@@ -159,6 +186,8 @@ public class DownloadController {
     				} else {
     					row.getCell(4).setCellValue(position.getStock().longValue());
     				}
+    				// 实际出
+    				row.createCell(5).setCellStyle(styleProduct);
     			}
     		}
     		startRow++;
