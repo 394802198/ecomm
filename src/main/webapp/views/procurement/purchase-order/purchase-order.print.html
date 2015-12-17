@@ -1,0 +1,223 @@
+<style>
+    @media print
+    {
+        .print-hide
+        {
+            display:none;
+        }
+    }
+    .print-table
+    {
+        width:100%;
+        font-size: small;
+        font-family: '宋体';
+        font-weight: bold;
+        color:#000;
+    }
+    .print-table-inner
+    {
+        width:100%;
+    }
+    .top-receive-table
+    {
+        border:none;
+        font-size:medium;
+        font-weight:bolder;
+    }
+    .table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th
+    {
+        border:1px solid #000 !important;
+    }
+
+    tr[size="A4"] {
+        background: white;
+        width: 21cm;
+        min-height: 29.7cm;
+        display: block;
+        margin: 0 auto;
+        margin-bottom: 0.5cm;
+        box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+    }
+    @media print {
+        body, tr[size="A4"] {
+            margin: 0;
+            box-shadow: 0;
+        }
+        .table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th
+        {
+            border:1px solid #000 !important;
+        }
+    }
+    .table-bordered
+    {
+        border:none;
+    }
+</style>
+
+<ol class="breadcrumb print-hide">
+    <li><a ui-sref="dashboard">首页</a></li>
+    <li><a ui-sref="purchaseOrder">采购单管理</a></li>
+    <li class="active">采购单打印</li>
+</ol>
+
+
+<table class="print-table" ng-show="page">
+    <tbody>
+    <tr size="A4" ng-repeat="purchaseOrder in page.content" ng-class="{active: order.active}">
+        <td style="width:21cm;">
+            <table class="print-table-inner top-receive-table">
+                <tr>
+                    <td>
+                        <table class="print-table-inner table-bordered text-center">
+                            <tr>
+                                <th class="text-center" colspan="2">
+                                    <h4>
+                                        MDD --&nbsp;&nbsp;{{ purchaseOrder.supplier.name }}&nbsp;&nbsp;Order&nbsp;&nbsp;&nbsp;&nbsp;{{ printTime | date : 'yyyy-MM-dd HH:mm:ss' }}
+                                    </h4>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th width="30%" class="text-right" style="padding-right:10px;">Account Name</th>
+                                <td width="70%">MDD</td>
+                            </tr>
+                            <tr>
+                                <th class="text-right" style="padding-right:10px;">Account Code</th>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th class="text-right" style="padding-right:10px;">Company Name</th>
+                                <td>{{ purchaseOrder.companyName }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-right" style="padding-right:10px;">Address</th>
+                                <td>{{ purchaseOrder.receiveAddress }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-right" style="padding-right:10px;">Phone</th>
+                                <td>{{ purchaseOrder.receivePhone }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-right" style="padding-right:10px;">Contact Name</th>
+                                <td>{{ purchaseOrder.receiveName }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-right" style="padding-right:10px;">Phone Number</th>
+                                <td>{{ purchaseOrder.receiveMobile }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-right" style="padding-right:10px;">Contact Email</th>
+                                <td>{{ purchaseOrder.receiveEmail }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-right" style="padding-right:10px;">Deliver attention</th>
+                                <td>{{ purchaseOrder.deliverAttention }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            <br/>
+            <table class="print-table-inner table-bordered order-detail-table">
+                <tr>
+                    <td colspan="12" class="text-center">
+                        <h4>My Order</h4>
+                    </td>
+                </tr>
+                <!--
+
+                Picture
+                Code
+                Description
+                Chinese Name
+                size
+                Barcode
+                RRP inc
+                Std W/S Exc
+                Std W/S Inc
+                Order Qty
+                Carton Size
+                Total
+
+                -->
+                <tr class="text-center" style="font-weight:bold; background:#c8c8c8;">
+                    <td>Picture</td>
+                    <td>Code</td>
+                    <td>Description</td>
+                    <td>Chinese Name</td>
+                    <td>Size</td>
+                    <td>Barcode</td>
+                    <td>RRP inc</td>
+                    <td>Std W/S Exc</td>
+                    <td>Std W/S Inc</td>
+                    <td>Order Qty</td>
+                    <td>Carton Size</td>
+                    <td>Total</td>
+                </tr>
+                <tr ng-repeat="item in purchaseOrder.items" class="text-center">
+                    <td>
+                        <img width="150px" src="https://www.google.co.nz/logos/doodles/2015/beethovens-245th-birthday-4687587541254144.2-res.png" />
+                    </td>
+                    <td>
+                        {{ item.supplierProduct ? item.supplierProduct.supplierProductCode : '' }}
+                    </td>
+                    <td>
+                        {{ item.supplierProduct ? item.supplierProduct.supplierProductName : '' }}
+                    </td>
+                    <td>
+                        {{ item.supplierProduct && item.supplierProduct.product ? item.supplierProduct.product.shortName : '' }}
+                    </td>
+                    <td></td>
+                    <td>
+                        {{
+                            item.supplierProduct && item.supplierProduct.product ? item.supplierProduct.product.barcode :
+                            item.supplierProduct ? item.supplierProduct.supplierProductBarcode : ''
+                        }}
+                    </td>
+                    <td></td>
+                    <td class="text-right">
+                        {{ item.estimatePurchaseUnitPrice || 0 | currency : '' }}
+                    </td>
+                    <td class="text-right">
+
+                        {{ ( ( item.estimatePurchaseUnitPrice || 0 ) * 115 ) / 100 | currency : '' }}
+                    </td>
+                    <td>
+                        {{ item.purchaseQty ? item.purchaseQty : 0 }}
+                    </td>
+                    <td></td>
+                    <td class="text-right">
+                        {{ getSubTotal( item ) | currency : '' }}
+                    </td>
+                </tr>
+                <tr class="text-center">
+                    <td colspan="8" style="border:none !important;">&nbsp;</td>
+                    <td colspan="2">
+                        Exc. GST
+                    </td>
+                    <td colspan="2" class="text-right">
+                        {{ getExcGst( purchaseOrder ) | currency : '' }}
+                    </td>
+                </tr>
+                <tr class="text-center">
+                    <td colspan="8" style="border:none !important;">&nbsp;</td>
+                    <td colspan="2">
+                        GST
+                    </td>
+                    <td colspan="2" class="text-right">
+                        {{ getGst( purchaseOrder ) | currency : '' }}
+                    </td>
+                </tr>
+                <tr class="text-center">
+                    <td colspan="8" style="border:none !important;">&nbsp;</td>
+                    <td colspan="2">
+                        Total
+                    </td>
+                    <td colspan="2" class="text-right">
+                        {{ getTotal( purchaseOrder ) | currency : '' }}
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    </tbody>
+</table>

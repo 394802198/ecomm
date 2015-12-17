@@ -14,36 +14,12 @@
     .pagination>li>a, .pagination>li>span {
         color: #4cae4c;
     }
-    @media print
-    {
-        .print-hide
-        {
-            display:none;
-        }
-        .hide-border-print
-        {
-            border:none;
-        }
-    }
-    .print-table
-    {
-        width:100%;
-        font-size:x-small;
-        font-family: "宋体";
-    }
 </style>
 <ol class="breadcrumb print-hide">
     <li><a ui-sref="dashboard">首页</a></li>
     <li><a ui-sref="shipment">发货单管理</a></li>
     <li class="active">创建发货单</li>
-    <!--<li class="pull-right" id="breadcrumb-li">-->
-    <!--<a href="javascript:void(0)" class="btn btn-info btn-xs" ui-sref="shipment">返回发货单列表</a>-->
-    <!--</li>-->
 </ol>
-<div class="alert alert-info print-hide" role="alert">
-    <h2 class="text-center">［打印快递单］功能目前还不完善，需要调整快递单打印模版的数据对齐位置</h2>
-    <h2 class="text-center">其余功能都 OK，有 BUG 随时来骚扰我</h2>
-</div>
 <div class="container-fluid container print-hide">
     <div class="panel panel-default">
         <div class="panel-body">
@@ -267,13 +243,9 @@
                                     <span class="glyphicon glyphicon-print"></span>
                                     打印配货单
                                 </a>
-                                <a class="btn btn-xs btn-success" ng-click="toggleShipmentCourierPrintSlide()">
-                                    <span class="glyphicon glyphicon-print"></span>
-                                    打印快递单
-                                </a>
                                 <a class="btn btn-xs btn-primary" ng-click="mergeSelectedShipments()">
                                     <span class="glyphicon glyphicon-th-large"></span>
-                                    批量合单
+                                    选中合单
                                 </a>
                             </td>
                         </tr>
@@ -480,34 +452,10 @@
     <h5 style="font-size:12px;">快捷操作</h5>
     <a class="btn btn-xs btn-primary" ng-click="mergeSelectedShipments()">
         <span class="glyphicon glyphicon-th-large"></span>
-        批量合单
+        选中合单
     </a>
     <button class="btn btn-xs btn-success" ng-click="confirmShipmentGeneration()" ng-disabled=" ! shipments || shipments.length < 1 " style="margin-top:1px;">
         <span class="glyphicon glyphicon-paste"></span>
         确定生成
     </button>
 </div>
-
-<div pageslide ps-open="shipmentCourierPrintSlideChecked" ps-speed="0.25" ps-size="100%">
-
-    <div id="operator-slider" style="padding:1px" class="container">
-        <div class="panel panel-default hide-border-print">
-            <div class="panel-body">
-                <button type="button" class="close print-hide" ng-click="toggleShipmentCourierPrintSlide()">
-                    <span aria-hidden="true">×</span>
-                </button>
-                <table class="print-table text-center">
-                    <tbody>
-                        <tr ng-repeat="shipmentCourier in shipmentCouriers">
-                            <td>{{ shipmentCourier.receiveName }}</td>
-                            <td>{{ shipmentCourier.shipNumber }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<span>&nbsp;</span>

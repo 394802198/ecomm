@@ -32,5 +32,18 @@ angular.module('ecommApp')
             data: {
                 roles: [ROLES.SYSTEM_ADMIN, ROLES.PURCHASE_ADMIN]
             }
+        })
+        .state('purchaseOrder.print', {
+            parent: 'site',
+            url: '/purchase-order-print',
+            views: {
+                'content@': {
+                    templateUrl: 'views/procurement/purchase-order/purchase-order.print.html?' + t,
+                    controller: 'PurchaseOrderPrintController'
+                }
+            },
+            data: {
+                roles: [ROLES.SYSTEM_ADMIN, ROLES.PURCHASE_ADMIN]
+            }
         });
 }]);

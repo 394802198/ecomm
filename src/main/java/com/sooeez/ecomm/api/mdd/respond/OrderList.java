@@ -58,9 +58,9 @@ public class OrderList
 	public String getDataStr()
 	{
 		StringBuilder dataBuilder = new StringBuilder();
-		for ( Map< String, Object > content : contentMap )
+		for( Map< String, Object > content : contentMap )
 		{
-			if ( ! dataBuilder.toString().trim().equals( "" ) )
+			if( ! dataBuilder.toString().trim().equals( "" ) )
 			{
 				dataBuilder.append( ", " );
 			}
@@ -100,16 +100,17 @@ public class OrderList
 		this.setErrorCode( respondErrorCode != null ? respondErrorCode : RespondCode.ERROR_FREE );
 		this.setErrorDesc( respondErrorDesc );
 
-		if ( respondData != null && respondData.size() > 0 )
+		if( respondData != null && respondData.size() > 0 )
 		{
-			for ( Object obj : respondData )
+			for( Object obj : respondData )
 			{
 				JSONObject jsonObjectOrderList = ( JSONObject ) obj;
-				
+
 				Map< String, Object > map = new HashMap< String, Object >();
 				map.put( "order_id", EcommUtils.getLongValue( jsonObjectOrderList.get( "order_id" ) ) );
+				map.put( "order_sn", EcommUtils.getStringValue( jsonObjectOrderList.get( "order_sn" ) ) );
 				map.put( "log_time", EcommUtils.getLongValue( jsonObjectOrderList.get( "log_time" ) ) );
-				
+
 				this.getContentMap().add( map );
 			}
 		}

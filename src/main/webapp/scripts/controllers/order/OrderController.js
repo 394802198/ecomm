@@ -85,7 +85,7 @@ var OrderController = function($scope, $location, toastr, orderService, Utils, P
             page: number ? number : 0,
             size: query.size,
             sort: query.sort,
-            orderId: query.order.orderId,
+            externalSn: query.order.externalSn,
             shipNumber: query.order.shipNumber,
             shopId: query.shop.selected ? query.shop.selected.id : null,
             shopIds: Auth.refreshManaged('shop'),
