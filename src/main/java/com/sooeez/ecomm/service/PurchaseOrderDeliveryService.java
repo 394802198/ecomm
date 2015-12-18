@@ -723,19 +723,19 @@ public class PurchaseOrderDeliveryService {
     	
     	estimateReceiveDateRowCell.setCellValue( "到货日期: " + ( purchaseOrder.getEstimateReceiveDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format( purchaseOrder.getEstimateReceiveDate() ) : "" ) );
 
-    	Font itemContentFont = workbook.createFont();
-    	itemContentFont.setColor( HSSFColor.BLACK.index );
-    	itemContentFont.setBold( false );
-    	itemContentFont.setFontName("宋体");
-    	itemContentFont.setFontHeightInPoints( (short) 12 );
+//    	Font itemContentFont = workbook.createFont();
+//    	itemContentFont.setColor( HSSFColor.BLACK.index );
+//    	itemContentFont.setBold( false );
+//    	itemContentFont.setFontName("宋体");
+//    	itemContentFont.setFontHeightInPoints( (short) 12 );
     	
-    	CellStyle itemContentCommonStyle = workbook.createCellStyle();
-    	itemContentCommonStyle.setWrapText( true );
-    	itemContentCommonStyle.setFont( itemContentFont );
-    	itemContentCommonStyle.setBorderBottom( CellStyle.BORDER_THIN );
-    	itemContentCommonStyle.setBorderLeft( CellStyle.BORDER_THIN );
-    	itemContentCommonStyle.setBorderRight( CellStyle.BORDER_THIN );
-    	itemContentCommonStyle.setBorderTop( CellStyle.BORDER_THIN );
+//    	CellStyle itemContentCommonStyle = workbook.createCellStyle();
+//    	itemContentCommonStyle.setWrapText( true );
+//    	itemContentCommonStyle.setFont( itemContentFont );
+//    	itemContentCommonStyle.setBorderBottom( CellStyle.BORDER_THIN );
+//    	itemContentCommonStyle.setBorderLeft( CellStyle.BORDER_THIN );
+//    	itemContentCommonStyle.setBorderRight( CellStyle.BORDER_THIN );
+//    	itemContentCommonStyle.setBorderTop( CellStyle.BORDER_THIN );
     	
     	/* 添加收货单详情
     	 */
