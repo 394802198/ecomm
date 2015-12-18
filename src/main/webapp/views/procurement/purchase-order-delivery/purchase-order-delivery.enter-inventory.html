@@ -8,41 +8,38 @@
         <div class="panel-heading">
             <h3 class="panel-title">收货单入库</h3>
         </div>
-        <div class="panel-body">
-            <p class="text-info">右边为入库单列表， 下边为需要入库的商品清单， 选择左边列表的商品，添加到下边列表</p>
-            <p class="text-info">默认添加按钮会忽略输入的数量，一次性把左边选中的商品，全数添加到下边的列表</p>
-        </div>
-        <hr style="margin: 0">
+        <table class="table table-condensed clear-marginbottom-table">
+            <thead>
+                <tr>
+                    <th width="2%">
+                        <input type="checkbox" ng-model="checkedAll" ng-click="selectAll(receive, checkedAll)">
+                    </th>
+                    <th width="85%">可入库商品</th>
+                    <th width="13%">已添加/可入库数量</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="item in receive.items | orderBy: 'supplierProduct.product.name'">
+                    <td>
+                        <input type="checkbox" ng-model="item.checked" ng-if="item.supplierProduct.product">
+                    </td>
+                    <td>
+                        
+                        {{item.supplierProduct.product == null ? item.supplierProduct.supplierProductName : item.supplierProduct.product.name}}
+                        <p>({{item.supplierProduct.product == null ? item.supplierProduct.supplierProductCode : item.supplierProduct.product.sku}})</p>
+                        <p ng-if="item.supplierProduct.product == null" class="text-warning">
+                            （没有绑定系统商品，不能入库）
+                            <a href="" class="btn btn-danger btn-xs" ng-click="saveOneKeyProduct(item.supplierProduct)">一键录入商品</a>
+                        </p>
+                    </td>
+                    <td>
+                        <span class="text-success">{{item.addedQty}}</span>/{{item.receiveQty}}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
         <div class="panel-body">
             <div class="row">
-                <div class="col-md-6">
-                    <table class="table table-condensed clear-marginbottom-table">
-                        <thead>
-                            <tr>
-                                <th width="4%">
-                                    <input type="checkbox" ng-model="checkedAll" ng-click="selectAll(receive, checkedAll)">
-                                </th>
-                                <th width="70%">可入库商品</th>
-                                <th width="26%">已添加/可入库数量</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr ng-repeat="item in receive.items | orderBy: 'supplierProduct.product.name'">
-                                <td>
-                                    <input type="checkbox" ng-model="item.checked" ng-if="item.supplierProduct.product">
-                                </td>
-                                <td>
-                                    {{item.supplierProduct.product == null ? item.supplierProduct.supplierProductName : item.supplierProduct.product.name}}
-                                    <p>({{item.supplierProduct.product == null ? item.supplierProduct.supplierProductCode : item.supplierProduct.product.sku}})</p>
-                                    <p ng-if="item.supplierProduct.product == null" class="text-warning">（没有绑定系统商品，不能入库）</p>
-                                </td>
-                                <td>
-                                    <span class="text-success">{{item.addedQty}}</span>/{{item.receiveQty}}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
                 <div class="col-md-6">
                     <form name="itemAddForm" class="form-horizontal" novalidate>
                         <div class="form-group">
@@ -95,11 +92,11 @@
         <table class="table table-condensed clear-marginbottom-table">
             <thead>
                 <tr>
-                    <th width="35%">商品</th>
-                    <th width="20%">仓库</th>
-                    <th width="15%">库位</th>
-                    <th width="10">数量</th>
-                    <th width="15%">保质期</th>
+                    <th width="55%">商品</th>
+                    <th width="15%">仓库</th>
+                    <th width="10%">库位</th>
+                    <th width="5%">数量</th>
+                    <th width="10%">保质期</th>
                     <th width="5%">操作</th>
                 </tr>
             </thead>
@@ -151,7 +148,7 @@
                         <span class="glyphicon glyphicon-warning-sign form-control-feedback" ng-show="someOperatorForm.purchaseBatchId.$dirty && someOperatorForm.purchaseBatchId.$invalid"></span>
                     </div>
                     <span class="col-md-7 help-block">
-                        如果本张收货单入库是针对一张临时采购的出库单的，必须在这里填写临时采购性质的出库单号。
+                        如果本张收货单入库时针对一张临时采购的出库单的，必须在这里填写临时采购性质的出库单号。
                     </span>
                 </div>
             </form>
@@ -160,7 +157,7 @@
         <div class="panel-body">
             <div class="row">
                 <div class="col-md-2 col-md-offset-10">
-                    <button type="button" class="btn btn-success btn-lg pull-right" ng-click="enterInventory()">入库确认</button>
+                    <button type="button" class="btn btn-success btn-lg pull-right" ng-click="enterInventory()">确认入库</button>
                 </div>
             </div>
         </div>

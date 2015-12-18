@@ -25,7 +25,7 @@ angular.module('ecommApp')
             sort: ['internalCreateTime,desc'],
             warehouse: undefined,
             shop: undefined,
-            hasOrderBatch: $scope.isorno[1]
+            hasOrderBatch: $scope.isorno[0]
         };
 
         $scope.query = angular.copy($scope.defaultQuery);
