@@ -148,5 +148,10 @@ public class SupplierProductController
 		supplierProductService.deleteSupplierProduct( id );
 		return new ResponseEntity< >( HttpStatus.OK );
 	}
+	
+	@RequestMapping(value = "/supplier-products/save/one-key", method = RequestMethod.POST)
+	public Product oneKeySaveProduct(@RequestBody SupplierProduct supplierProduct) {
+		return this.supplierProductService.oneKeySaveProduct(supplierProduct);
+	}
 
 }

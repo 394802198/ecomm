@@ -1,7 +1,7 @@
 angular.module('ecommApp')
 
-.controller('EnterInventoryOperatorController', ['$scope', '$rootScope', '$state', '$stateParams', 'toastr', 'Warehouse', 'purchaseOrderDeliveryService', 'InventoryBatch', '$filter',
-    function($scope, $rootScope, $state, $stateParams, toastr, Warehouse, purchaseOrderDeliveryService, InventoryBatch, $filter) {
+.controller('EnterInventoryOperatorController', ['$scope', '$rootScope', '$state', '$stateParams', 'toastr', 'Warehouse', 'purchaseOrderDeliveryService', 'InventoryBatch', '$filter', 'supplierProductService',
+    function($scope, $rootScope, $state, $stateParams, toastr, Warehouse, purchaseOrderDeliveryService, InventoryBatch, $filter, supplierProductService) {
 
         $scope.defaultBatch = {
             operate: 1,
@@ -76,6 +76,50 @@ angular.module('ecommApp')
                 });
             });
         }
+
+        $scope.saveOneKeyProduct = function(supplierProduct){
+            //supplierProductService
+            var product = {
+                productType: 0,
+                tempPurchasing: 0,
+                brand: {
+                    id: 382
+                },
+                category: {
+                    id: 16
+                },
+                source: {
+                    id: 1000000
+                },
+                language: {
+                    id: 100
+                },
+                currency: {
+                    id: 100
+                },
+                sku: supplierProduct.supplierProductCode,
+                barcode: supplierProduct.supplierProductBarcode,
+                name: supplierProduct.supplierProductName,
+                shortName: supplierProduct.supplierProductName,
+                priceL1: 0.00,
+                priceL2: 0.00,
+                priceL3: 0.00,
+                priceL4: 0.00,
+                priceL5: 0.00,
+                priceL6: 0.00,
+                priceL7: 0.00,
+                priceL8: 0.00,
+                priceL9: 0.00,
+                priceL10: 0.00,
+                weight: 0,
+                enabled: 1
+            };
+            console.log(product);
+            supplierProduct.product = product;
+            supplierProductService.saveOneKey(supplierProduct).then(function(product){
+                supplierProduct.product = product;
+            });
+        };
 
         $scope.selectAll = function(receive, checkedAll) {
             $.each(receive.items, function() {

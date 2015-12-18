@@ -220,10 +220,14 @@ public class OrderService
 	public void findAvailableDeployOrder( Order order )
 	{
 		// 查询出可配货的订单的 id
-		String sqlString = "select distinct(`order`.id) from t_order as `order`, " +
-			"t_order_item as orderItem, " + "t_object_process as process, " + "t_shop as shop " +
-			"where `order`.id = orderItem.order_id " + "and `order`.id = process.object_id " +
-			"and process.object_type = 1 " + "and `order`.shop_id = shop.id ";
+		String sqlString = "select distinct(`order`.id) from t_order as `order`, " 
+			+ "t_order_item as orderItem, " 
+			+ "t_object_process as process, " 
+			+ "t_shop as shop " 
+			+ "where `order`.id = orderItem.order_id " 
+			+ "and `order`.id = process.object_id " 
+			+ "and process.object_type = 1 " 
+			+ "and `order`.shop_id = shop.id ";
 		if( order.getAction() != null && order.getAction().indexOf( "getOrderedQty" ) > - 1 )
 		{
 			sqlString += "and (shop.init_process_step_id = process.step_id " +
@@ -237,8 +241,9 @@ public class OrderService
 		sqlString += "and `order`.deleted = 0 ";
 		if( order.getInternalCreateTimeStart() != null && order.getInternalCreateTimeEnd() != null )
 		{
-			sqlString += "and `order`.internal_create_time between '" +
-				order.getInternalCreateTimeStart() + "' " + "and '" + order.getInternalCreateTimeEnd() + "'";
+			sqlString += "and `order`.internal_create_time between '" 
+					+ order.getInternalCreateTimeStart() + "' " 
+					+ "and '" + order.getInternalCreateTimeEnd() + "'";
 			order.setInternalCreateTimeStart( null );
 			order.setInternalCreateTimeEnd( null );
 		}
@@ -318,6 +323,7 @@ public class OrderService
 		}
 
 		order.setOrderIds( new ArrayList< >() );
+		System.out.println("sql: " + sqlString);
 		System.out.println( "查询出来的可用的订单编号:" );
 		em.createNativeQuery( sqlString ).getResultList().forEach( orderId ->
 		{

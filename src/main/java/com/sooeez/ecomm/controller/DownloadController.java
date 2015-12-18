@@ -67,7 +67,7 @@ public class DownloadController {
 	
 	private HSSFRow createRowAndStyle(int startRow, HSSFSheet sheet, HSSFCellStyle style) {
 		HSSFRow row = sheet.createRow(startRow);
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 6; i++) {
 			HSSFCell dataCell = row.createCell(i);
 			dataCell.setCellStyle(style);
 		}
@@ -151,7 +151,7 @@ public class DownloadController {
     		HSSFRow row = createRowAndStyle(startRow, sheet, style);
     	
     		// 设置商品名称
-    		row.getCell(0).setCellValue(product.getName());
+    		row.getCell(1).setCellValue(product.getName());
     		row.getCell(0).setCellStyle(styleProduct);
     		
     		// 设置sku
@@ -161,7 +161,7 @@ public class DownloadController {
     			WarehousePosition position = product.getPositions().get(i);
     			if (i == 0) {
     				// 设置库位
-    				row.getCell(1).setCellValue(position.getName());
+    				row.getCell(0).setCellValue(position.getName());
     				// 设置应出库数量
     				row.getCell(3).setCellValue(Math.abs(position.getTotal().longValue()));
     				// 出库后应剩余库存
@@ -171,13 +171,13 @@ public class DownloadController {
         				row.getCell(4).setCellValue(position.getStock().longValue());
     				}
     				// 实际出
-    				row.createCell(5).setCellStyle(styleProduct);
+    				row.getCell(5).setCellStyle(styleProduct);
     				
     			} else {
     				startRow++;
     				row = createRowAndStyle(startRow, sheet, style);
     				// 设置库位
-    				row.getCell(1).setCellValue(position.getName());
+    				row.getCell(0).setCellValue(position.getName());
     				// 设置应出库数量
     				row.getCell(3).setCellValue(Math.abs(position.getTotal().longValue()));
     				// 出库后应剩余库存
@@ -187,7 +187,7 @@ public class DownloadController {
     					row.getCell(4).setCellValue(position.getStock().longValue());
     				}
     				// 实际出
-    				row.createCell(5).setCellStyle(styleProduct);
+    				row.getCell(5).setCellStyle(styleProduct);
     			}
     		}
     		startRow++;

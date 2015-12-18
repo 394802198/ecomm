@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.sooeez.ecomm.domain.Product;
@@ -29,7 +30,7 @@ public class SupplierProductService
 {
 
 	@Autowired
-	SupplierProductRepository supplierProductRepository;
+	private SupplierProductRepository supplierProductRepository;
 
 	// Service
 	@PersistenceContext
@@ -260,6 +261,22 @@ public class SupplierProductService
 
 			return cb.and( predicates.toArray( new Predicate[ predicates.size() ] ) );
 		};
+	}
+	
+	/*
+	 * one key save product and update supplier product related product id
+	 */
+	
+	@Autowired
+	private ProductService productService;
+	
+	@Transactional
+	public Product oneKeySaveProduct(SupplierProduct supplierProduct) {
+		Product product = supplierProduct.getProduct();
+		product.setProcesses(new ArrayList<>());
+		product = productService.saveProduct(supplierProduct.getProduct());
+		supplierProductRepository.updateProductId(product.getId(), supplierProduct.getId());
+		return product;
 	}
 
 }
