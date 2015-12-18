@@ -12,8 +12,13 @@ public interface ShipmentRepository extends JpaRepository< Shipment, Long >, Jpa
 {
 	@Modifying
 	@Query( "UPDATE Shipment s SET s.shipStatus = ?1 where s.id = ?2" )
-    @Transactional
+	@Transactional
 	int updateShipStatus( Integer shipStatus, Long id );
+
+	@Modifying
+	@Query( "UPDATE Shipment s SET s.memo = ?1 where s.id = ?2" )
+	@Transactional
+	int updateMemo( String memo, Long id );
 
 	@Query( "SELECT SUM( s.qtyTotalItemShipped ) FROM Shipment s WHERE s.orderId = ?1" )
 	int getQtyShippedSumByOrderId( Long orderId );

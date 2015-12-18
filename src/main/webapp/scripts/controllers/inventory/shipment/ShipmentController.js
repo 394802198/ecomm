@@ -7,6 +7,8 @@ angular.module('ecommApp')
          */
         $scope.isAnythingModified = false;
 
+        $scope.obsoleteReason = '';
+
         $scope.template = {
             shipmentComplete: {
                 url: 'views/inventory/shipment/shipment-complete.html?' + (new Date())
@@ -135,8 +137,19 @@ angular.module('ecommApp')
             }
         };
 
+        $scope.searchByEnterKey = function( e )
+        {
+            var keyCode = e.which || e.keyCode;
+            if( keyCode === 13 )
+            {
+                $scope.search( $scope.query );
+            }
+        };
+
         $scope.search = function( query )
         {
+            console.log( 'query: ' );
+            console.log( query );
             $scope.searchData( query );
         };
 
@@ -217,9 +230,10 @@ angular.module('ecommApp')
                     window.location.href = '/api/shipment/export?ids=' + ids;
                     toastr.info('批量导出发货单');
                 }
-                else if( $scope.batchManipulationValue === 'shipmentPrint' )
+                else if( $scope.batchManipulationValue === 'shipmentCourierPrint' )
                 {
-                    toastr.info('发货单打印！');
+                    console.log( '$scope.batchManipulationValue: ' + $scope.batchManipulationValue );
+                    $window.open( '/#/shipment-courier-print?shipmentId=' + ( ids || '') );
                 }
             }
             else
@@ -271,9 +285,9 @@ angular.module('ecommApp')
             {
                 for( var shipmentIndex in shipments )
                 {
-                    if( shipments[ shipmentIndex].id === shipmentService.selectedShipments[ selectedShipment].id )
+                    if( shipments[ shipmentIndex ].id === shipmentService.selectedShipments[ selectedShipment ].id )
                     {
-                        shipments[ shipmentIndex ].shipStatus = shipmentService.selectedShipments[ selectedShipment].shipStatus;
+                        shipments[ shipmentIndex ].shipStatus = shipmentService.selectedShipments[ selectedShipment ].shipStatus;
                     }
                 }
             }
@@ -320,18 +334,37 @@ angular.module('ecommApp')
 
         $scope.changeShipmentStatus = function()
         {
-            /** 赋上目标状态
-             */
-            $scope.selectedShipment.shipStatus = $scope.targetStatus;
+            var isChangeable = true;
 
-            shipmentService.changeShipmentStatus( $scope.selectedShipment, function()
+            if( $scope.targetStatus === 6 && $scope.obsoleteReason === '' )
             {
-                $scope.search( $scope.query );
-            });
+                isChangeable = false;
 
-            $('#changeShipmentStatus').modal('hide');
+                toastr.warning('请填写作废原因，再继续');
 
-            toastr.success('切换状态至［' + $scope.targetStatusStr + '］');
+                $('[ng-model="obsoleteReason"]').focus();
+            }
+
+            if( isChangeable )
+            {
+                /** 赋上目标状态
+                 */
+                $scope.selectedShipment.shipStatus = $scope.targetStatus;
+
+                /** 假设是作废操作，附上作废原因
+                 */
+                $scope.selectedShipment.memo = $scope.obsoleteReason;
+
+                shipmentService.changeShipmentStatus( $scope.selectedShipment, function()
+                {
+                    $scope.search( $scope.query );
+                });
+
+                $('#changeShipmentStatus').modal('hide');
+
+                toastr.success('切换状态至［' + $scope.targetStatusStr + '］');
+            }
+
         };
         /**
          * 单个发货单切换状态 : 结束
@@ -475,24 +508,30 @@ angular.module('ecommApp')
 
         /** 打印快递单
          */
-        $scope.printShipmentCouriers = function()
+        $scope.printSelectedCouriers = function()
         {
-            var ids = [];
-            if( $scope.shipments && $scope.shipments.length > 0 )
+            var shipmentIds = [];
+            if( $scope.page.content && $scope.page.content.length > 0 )
             {
-                var shipments = $scope.shipments;
+                var shipments = $scope.page.content;
                 for( var shipmentIndex in shipments )
                 {
+                    console.log( 'shipments[ shipmentIndex ]: ' );
+                    console.log( shipments[ shipmentIndex ] );
                     if( shipments[ shipmentIndex ].isSelected )
                     {
-                        ids.push( shipments[ shipmentIndex].id );
+                        shipmentIds.push( shipments[ shipmentIndex].id );
                     }
                 }
             }
-            console.log( 'ids: ' );
-            console.log( ids );
-
-
+            if( shipmentIds.length > 0 )
+            {
+                $window.open( '/#/shipment-courier-print?shipmentId=' + ( shipmentIds || '') );
+            }
+            else
+            {
+                toastr.warning('请选择至少一张发货单来继续');
+            }
         };
 
         /** 锁定/解锁同品更名
@@ -927,7 +966,7 @@ angular.module('ecommApp')
                         if( isBelowShipment )
                         {
                             shipNumberInt++;
-                            shipments[ shipmentIndex].shipNumber = shipNumberStr + shipNumberInt;
+                            shipments[ shipmentIndex ].shipNumber = shipNumberStr + shipNumberInt;
                         }
 
                         if( shipments[ shipmentIndex ] === shipment )
@@ -947,6 +986,40 @@ angular.module('ecommApp')
             {
                 toastr.warning('最后一张运单不能使用该功能');
             }
+        };
+
+        /** 向下批量打印快递单号
+         */
+        $scope.downwardPrintingShipmentCouriers = function( shipment )
+        {
+            var shipments = $scope.page.content;
+            var ids = [];
+            if( shipments[ shipments.length - 1 ] !== shipment )
+            {
+                var isBeginShipment = false;
+                for( var shipmentIndex in shipments )
+                {
+                    if( shipments[ shipmentIndex ] === shipment )
+                    {
+                        isBeginShipment = true;
+                    }
+
+                    if( isBeginShipment )
+                    {
+                        ids.push( shipments[ shipmentIndex ].id );
+                    }
+                }
+                $window.open( '/#/shipment-courier-print?shipmentId=' + ( ids || '') );
+            }
+            else
+            {
+                toastr.warning('最后一张运单不能使用该功能，请通过点击后面的［打印快递单］按钮来进行打印预览操作');
+            }
+        };
+
+        $scope.printSingleShipmentCourier = function( shipment )
+        {
+            $window.open( '/#/shipment-courier-print?shipmentId=' + ( shipment.id || '') );
         };
 
     }

@@ -275,9 +275,13 @@
                                 <input type="checkbox" ng-model="shipment.isSelected" />
                             </td>
                             <td width="13%">
-                                <strong>所属订单:</strong><br/>
+                                <strong>Ecomm订单:</strong><br/>
                                 <strong>{{ shipment.orderId }}</strong>
-                                <br/><br/>
+                                <br/>
+                                <strong>店铺外部订单:</strong><br/>
+                                <strong>{{ shipment.externalSn }}</strong>
+                                <br/>
+                                <br/>
                                 <strong>输入快递单:</strong><br/>
                                 <div>
                                     <input class="form-control input-sm" type="text" ng-model="shipment.shipNumber" />

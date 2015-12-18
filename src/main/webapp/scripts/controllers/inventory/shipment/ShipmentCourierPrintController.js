@@ -1,14 +1,51 @@
 
-var ShipmentCourierPrintController = function($scope, $rootScope, $location, $interval, toastr, purchaseOrderService, Utils)
+var ShipmentCourierPrintController = function($scope, $rootScope, $location, $interval, toastr, shipmentService, Utils)
 {
 
     $scope.defaultQuery =
     {
-        purchaseOrderIds    :   []
+        shipmentIds    :   []
     };
     $scope.query = angular.copy( $scope.defaultQuery );
 
     $scope.operator = $rootScope.user();
+
+    $scope.postingDate = new Date();
+
+    function grep( mergedItems, item )
+    {
+        return $.grep( mergedItems, function( e )
+        {
+            console.log( e );
+            if( e.printName === item.printName )
+            {
+                e.qtyShipped += item.qtyShipped;
+            }
+            return e.printName === item.printName;
+        });
+    }
+
+    function initMergeShipmentItems()
+    {
+        var shipments = $scope.page.content;
+        for( var shipmentIndex in shipments )
+        {
+            var mergedItems = [];
+            var items = shipments[ shipmentIndex ].shipmentItems;
+            for( var itemIndex in items )
+            {
+                var item = items[ itemIndex ];
+                //console.log( item );
+                var result = grep( mergedItems, item );
+                if( result.length < 1 )
+                {
+                    mergedItems.push( item );
+                }
+            }
+
+            shipments[ shipmentIndex ].mergedItems = mergedItems;
+        }
+    }
 
 
     function updatePrintTime()
@@ -26,28 +63,32 @@ var ShipmentCourierPrintController = function($scope, $rootScope, $location, $in
     $scope.searchData = function(query, number)
     {
         var search = $location.search();
-        var purchaseOrderId = search.purchaseOrderId;
+        var shipmentId = search.shipmentId;
 
-        if( purchaseOrderId )
+        if( shipmentId )
         {
-            query.purchaseOrderIds = purchaseOrderId.split(',');
+            query.shipmentIds = shipmentId.split(',');
         }
 
-        if( query.purchaseOrderIds.length > 0 )
+        if( query.shipmentIds.length > 0 )
         {
-            purchaseOrderService.get({
+            shipmentService.get({
                 page: number ? number : 0,
-                purchaseOrderIds: query.purchaseOrderIds
+                shipmentIds: query.shipmentIds
             }, function(page) {
                 $scope.page = page;
                 query.totalPagesList = Utils.setTotalPagesList(page);
                 toastr.success('采购单准备就绪，可以进行打印操作');
+
+                initMergeShipmentItems();
             });
         }
     };
 
+    $scope.searchData( $scope.query );
+
 };
 
-ShipmentCourierPrintController.$inject = ['$scope', '$rootScope', '$location', '$interval', 'toastr', 'purchaseOrderService', 'Utils'];
+ShipmentCourierPrintController.$inject = ['$scope', '$rootScope', '$location', '$interval', 'toastr', 'shipmentService', 'Utils'];
 
 angular.module('ecommApp').controller('ShipmentCourierPrintController', ShipmentCourierPrintController);

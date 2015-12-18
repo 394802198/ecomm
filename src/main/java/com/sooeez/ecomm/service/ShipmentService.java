@@ -114,6 +114,18 @@ public class ShipmentService
 			{
 				this.shipmentRepository.updateShipStatus( shipment.getShipStatus(), shipment.getId() );
 
+				/*
+				 * 切换至［已作废］，则更新［memo］
+				 */
+				if( shipment.getShipStatus().equals( 6 ) )
+				{
+
+					System.out.println( "shipment.getShipStatus(): " + shipment.getShipStatus() );
+					System.out.println( "shipment.getMemo(): " + shipment.getMemo() );
+
+					this.shipmentRepository.updateMemo( shipment.getMemo(), shipment.getId() );
+				}
+
 				Boolean isOrderStatusUpdatable = false;
 
 				/*
@@ -529,6 +541,10 @@ public class ShipmentService
 			if( shipment.getShipWarehouseId() != null )
 			{
 				predicates.add( cb.equal( root.get( "shipWarehouseId" ), shipment.getShipWarehouseId() ) );
+			}
+			if( shipment.getShipmentIds() != null && shipment.getShipmentIds().size() > 0 )
+			{
+				predicates.add( cb.in( root.get( "id" ) ).value( shipment.getShipmentIds() ) );
 			}
 			if( shipment.getOrderId() != null )
 			{
