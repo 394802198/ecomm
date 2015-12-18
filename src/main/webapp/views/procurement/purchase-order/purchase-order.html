@@ -209,14 +209,17 @@
                             <span class="glyphicon glyphicon-edit"></span>
                             编辑
                         </a>
+                        <br/>
                         <a ng-click="printSingle( purchaseOrder.id )" class="btn btn-xs btn-info">
                             <span class="glyphicon glyphicon-save-file"></span>
-                            打印
+                            打印临时采购单
                         </a>
-                        <!--<a ng-href="/api/purchaseOrder/export?id={{ purchaseOrder.id }}" class="btn btn-xs btn-info">-->
-                            <!--<span class="glyphicon glyphicon-save-file"></span>-->
-                            <!--导出-->
-                        <!--</a>-->
+                        <br/>
+                        <a ng-href="/api/purchaseOrder/export?id={{ purchaseOrder.id }}" class="btn btn-xs btn-info">
+                            <span class="glyphicon glyphicon-save-file"></span>
+                            导出供应商采购单
+                        </a>
+                        <br/>
                         <!-- 已收货，则不能被作废 -->
                         <a class="btn btn-danger btn-xs" ng-hide="purchaseOrder.status == 2 || purchaseOrder.status == 3" ng-click="showObsoletePurchaseOrderModal( purchaseOrder )">作废</a>
                     </td>

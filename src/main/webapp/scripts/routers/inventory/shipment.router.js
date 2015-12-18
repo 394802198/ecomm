@@ -35,7 +35,7 @@ angular.module('ecommApp')
             url: '/shipment-courier-print',
             views: {
                 'content@': {
-                    templateUrl: 'views/procurement/shipment-courier.print.html?' + t,
+                    templateUrl: 'views/inventory/shipment/shipment-courier.print.html?' + t,
                     controller: 'ShipmentCourierPrintController'
                 }
             },

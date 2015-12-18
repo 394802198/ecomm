@@ -1259,6 +1259,7 @@ public class OrderService
 			{
 				Shipment shipment = new Shipment();
 				shipment.setOrderId( finalOrder.getId() );
+				shipment.setExternalSn( finalOrder.getExternalSn() );
 				shipment.setTotalWeight( finalOrder.getWeight() );
 				shipment.setSenderName( finalOrder.getSenderName() );
 				shipment.setSenderPhone( finalOrder.getSenderPhone() );

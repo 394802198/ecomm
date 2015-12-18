@@ -469,7 +469,7 @@ angular.module('ecommApp')
                         if( isBelowShipment )
                         {
                             shipNumberInt++;
-                            shipments[ shipmentIndex].shipNumber = shipNumberStr + shipNumberInt;
+                            shipments[ shipmentIndex ].shipNumber = shipNumberStr + shipNumberInt;
                         }
 
                         if( shipments[ shipmentIndex ] === shipment )
