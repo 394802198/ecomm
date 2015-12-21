@@ -78,7 +78,6 @@ var ShipmentCourierPrintController = function($scope, $rootScope, $location, $in
             }, function(page) {
                 $scope.page = page;
                 query.totalPagesList = Utils.setTotalPagesList(page);
-                toastr.success('采购单准备就绪，可以进行打印操作');
 
                 initMergeShipmentItems();
             });
