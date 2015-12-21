@@ -20,10 +20,12 @@
     }
 
     tr[size="FTD"] {
-        background:url( 'http://www.xiaohuilang.com/service/template/wof/2015/01/201579pn1334352oo.jpg' );
+        background:url( 'images/courier_template/FTD_Final.png' );
+        /*background:url( 'http://www.xiaohuilang.com/service/template/wof/2015/01/201579pn1334352oo.jpg' );*/
         background-size: 100%;
-        width: 23cm;
-        height: 12.7cm;
+        background-repeat:no-repeat;
+        width: 23.46854166667cm;
+        height: 15.160625cm;
         display: block;
         margin: 0 auto;
         margin-bottom: 0.5cm;
@@ -45,41 +47,49 @@
     .posting_date
     {
         position:absolute;
-        top:94px;
-        left:66px;
+        top:105px;
+        left:95px;
         font-size:12px;
+    }
+    .posting_date_month
+    {
+        margin-left:15px;
+    }
+    .posting_date_day
+    {
+        margin-left:20px;
     }
     .to
     {
-        top:86px;
-        left:466px;
+        top:95px;
+        left:506px;
         font-size:18px;
     }
     .from
     {
-        top:110px;
-        left:130px;
+        top:125px;
+        left:135px;
         font-size:18px;
     }
     .external_sn
     {
-        top:180px;
+        top:190px;
         left:220px;
         font-size:18px;
     }
     .address
     {
-        top:145px;
-        left:476px;
-        font-size:14px;
+        top:192px;
+        left:506px;
+        font-size:18px;
         width:280px;
         height: 70px;
         overflow: hidden;
     }
     .phone
     {
-        top:228px;
-        left:540px;
+        top:265px;
+        left:550px;
         font-size:12px;
         width:200px;
         height:12px;
@@ -87,7 +97,7 @@
     }
     .contents
     {
-        top:350px;
+        top:335px;
         left:70px;
         font-size:12px;
         width:320px;
@@ -121,10 +131,12 @@
             <!-- 收寄日期 -->
             <span class="posting_date">
                 {{ postingDate.getFullYear() }}
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {{ postingDate.getMonth() + 1 }}
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {{ postingDate.getDate() }}
+                <span class="posting_date_month">
+                    {{ postingDate.getMonth() + 1 }}
+                </span>
+                <span class="posting_date_day">
+                    {{ postingDate.getDate() }}
+                </span>
             </span>
 
             <!-- 收件人 -->
@@ -149,7 +161,7 @@
 
             <!-- 电话 -->
             <div class="phone">
-                {{ shipment.receivePhone }} {{ shipment.receivePhone }}
+                {{ shipment.receivePhone }}
             </div>
 
             <!-- 物品 -->
