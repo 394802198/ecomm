@@ -32,18 +32,20 @@ public class PurchaseOrderItem implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	//	#采购单id
+	// #采购单id
 	@Column(name = "purchase_order_id", nullable = false)
 	private Long purchaseOrderId;
 
-	//	#采购数量
+	// #采购数量
 	@Column(name = "purchase_qty", nullable = false)
 	private Long purchaseQty;
 
-	//	#商品预计采购单价
+	// #商品预计采购单价
 	@Column(name = "estimate_purchase_unit_price")
 	private BigDecimal estimatePurchaseUnitPrice;
-	
+
+	@Column(name = "memo")
+	private String memo;
 
 	/*
 	 * Related Properties
@@ -53,28 +55,28 @@ public class PurchaseOrderItem implements Serializable {
 	@NotFound(action = NotFoundAction.IGNORE)
 	@JoinColumn(name = "supplier_product_id")
 	private SupplierProduct supplierProduct;
-	
+
 	/*
 	 * OperationReview Params
 	 */
-	
-	//	#待收货数量
+
+	// #待收货数量
 	@Transient
 	private Long pendingQty;
-	
-	//	#实际收货数量
+
+	// #实际收货数量
 	@Transient
 	private Long realReceivedQty;
-	
-	//	#Credit数量
+
+	// #Credit数量
 	@Transient
 	private Long creditQty;
-	
-	//	#Back Order数量
+
+	// #Back Order数量
 	@Transient
 	private Long backOrderQty;
-	
-	//	#实际采购单价
+
+	// #实际采购单价
 	@Transient
 	private BigDecimal realPurchaseUnitPrice;
 
@@ -84,19 +86,29 @@ public class PurchaseOrderItem implements Serializable {
 	@Transient
 	private Boolean ignoreCheck = false;
 
-	
 	/*
 	 * 采购单：采购［供应商新品］时，临时用到的毫秒，匹配［供应商产品］和［采购单详情］是否关联
 	 */
 	@Transient
 	private Long currentTimeMillis;
 	
-	
-	
-	
+	/*
+	 * toString Function
+	 */
+
+	public String toString() {
+		String str = "PurchaseOrderItem = {";
+		str += "id: \"" + id + "\"\n";		
+		str += ", purchaseOrderId: \"" + purchaseOrderId + "\"\n";		
+		//str += ", supplierProductId: \"" + supplierProductId + "\"\n";		
+		str += ", purchaseQty: \"" + purchaseQty + "\"\n";		
+		str += ", estimatePurchaseUnitPrice: \"" + estimatePurchaseUnitPrice + "\"\n";		
+		str += ", memo: \"" + memo + "\"\n";
+		str += "}";
+		return str;
+	}
 
 	//
-
 
 	public Long getId() {
 		return id;
@@ -200,6 +212,14 @@ public class PurchaseOrderItem implements Serializable {
 
 	public void setCurrentTimeMillis(Long currentTimeMillis) {
 		this.currentTimeMillis = currentTimeMillis;
+	}
+
+	public String getMemo() {
+		return memo;
+	}
+
+	public void setMemo(String memo) {
+		this.memo = memo;
 	}
 
 }

@@ -137,6 +137,8 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
             purchaseOrder.totalDeliveredQty = purchaseOrder.totalDeliveredQty ? purchaseOrder.totalDeliveredQty : 0;
             purchaseOrder.totalPurcahsedQty = purchaseOrder.totalPurcahsedQty ? purchaseOrder.totalPurcahsedQty : 0;
 
+            console.log('items: ');
+            console.log(purchaseOrder.items);
             purchaseOrderService.save({
                 action: $scope.action
             }, purchaseOrder, function(purchaseOrder) {

@@ -30,7 +30,7 @@
                  供应商产品
 
                  -->
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="panel panel-default" style="height:600px;">
                         <div class="panel-body">
 
@@ -89,7 +89,7 @@
                  采购产品
 
                  -->
-                <div class="col-md-6">
+                <div class="col-md-12">
 
                     <div class="panel panel-default" style="height:600px;">
                         <div class="panel-body">
@@ -101,8 +101,9 @@
                                         <th width="20%">商品sku/条码</th>
                                         <th width="25%">商品名称</th>
                                         <th width="15%">供应商编号</th>
-                                        <th width="15%">采购数量</th>
-                                        <th width="15%">采购单价<br/>(不含GST)</th>
+                                        <th width="10%">采购数量</th>
+                                        <th width="10%">采购单价<br/>(不含GST)</th>
+                                        <th width="10%">备注</th>
                                         <th width="10%">操作</th>
                                     </tr>
                                 </thead>
@@ -110,7 +111,7 @@
                             <div style="overflow-y:auto; overflow-x:hidden; height:430px;">
                                 <table class="table" style="word-wrap:break-word; table-layout:fixed;">
                                     <tbody>
-                                        <tr ng-repeat="item in purchaseOrder.items" class="pagination-ul" >
+                                        <tr ng-repeat="item in purchaseOrder.items | orderBy: 'memo'" class="pagination-ul" >
                                             <td width="20%">
                                                 sku:{{ item.supplierProduct && item.supplierProduct.product ? item.supplierProduct.product.sku : '' }}<br/>
                                                 条码:{{ item.supplierProduct && item.supplierProduct.product ? item.supplierProduct.product.barcode : item.supplierProduct.supplierProductBarcode }}
@@ -121,11 +122,14 @@
                                             <td width="15%">
                                                 {{ item.supplierProduct ? item.supplierProduct.supplierProductCode : '' }}
                                             </td>
-                                            <td width="15%">
+                                            <td width="10%">
                                                 <input type="text" ng-model="item.purchaseQty" ng-blur="rebuildPurchaseQtyNumeric( item )" class="form-control input-sm" placeholder="(必填)" />
                                             </td>
-                                            <td width="15%">
+                                            <td width="10%">
                                                 <input type="text" ng-model="item.estimatePurchaseUnitPrice" ng-blur="rebuildPurchasePriceNumeric( item, 'estimatePurchaseUnitPrice' )" class="form-control input-sm" placeholder="(选填)" />
+                                            </td>
+                                            <td width="10%">
+                                                <input type="text" ng-model="item.memo" class="form-control input-sm" placeholder="(选填)" />
                                             </td>
                                             <td width="10%">
                                                 <a class="btn btn-sm btn-success" ng-click="removeItemFromPurchaseOrderItems( item )">移除</a>

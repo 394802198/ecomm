@@ -1,8 +1,40 @@
 angular.module('ecommApp')
 
-.factory('supplierProductService', ['$resource', '$http', function($resource, $http) {
+.factory('supplierProductService', ['$rootScope', '$resource', '$http', function($rootScope, $resource, $http) {
 
     var supplierProduct = $resource('/api/supplierproducts/:id', {}, {});
+
+    supplierProduct.getDefaultSupplierProduct = function() {
+        return {
+            id: null,
+            supplierId: null,
+            productId: null,
+            supplierProductCode: null,
+            supplierProductBarcode: null,
+            supplierProductName: null,
+            defaultPurchasePrice: null,
+            createTime: null,
+            lastUpdate: null,
+            creatorId: null,
+            productPlace: null,
+            creator: $rootScope.user()
+        };
+    };
+
+    supplierProduct.getDefaultQuery = function() {
+        return {
+            page: 0,
+            size: 20,
+            sort: [],
+            supplierProduct: supplierProduct.getDefaultSupplierProduct()
+        };
+    };
+
+    supplierProduct.initProperties = function(supplierProduct) {
+    };
+
+    supplierProduct.refreshProperties = function(supplierProduct) {
+    };
 
     supplierProduct.getAll = function(params) {
         return $http.get('/api/supplierproducts/get/all', {
@@ -31,9 +63,10 @@ angular.module('ecommApp')
     };
 
 
-    /* 批量选中 */
+    // 批量选中
     supplierProduct.selectedSupplierProducts = [];
-    /* 单个选中 */
+
+    // 单个选中
     supplierProduct.selectedSupplierProduct = {};
 
     supplierProduct.getSelectedSupplierProduct = function() {
@@ -51,4 +84,5 @@ angular.module('ecommApp')
     };
 
     return supplierProduct;
+
 }]);

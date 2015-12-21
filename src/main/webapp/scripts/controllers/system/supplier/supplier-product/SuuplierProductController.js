@@ -3,9 +3,10 @@ angular.module('ecommApp')
 .controller('SupplierProductController', ['$scope', '$rootScope', 'toastr', 'Supplier', 'User', 'Utils', 'supplierProductService',
     function($scope, $rootScope, toastr, Supplier, User, Utils, supplierProductService) {
 
+        $scope.query = angular.copy(supplierProductService.getDefaultQuery());
+
         /* Activate Date Picker */
-        $('input[ng-model="query.queryCreateTimeStart"], input[ng-model="query.queryCreateTimeEnd"], ' +
-            'input[ng-model="query.queryLastUpdateStart"], input[ng-model="query.queryLastUpdateEnd"]').datepicker({
+        $('.input-daterange>input').datepicker({
             format: 'yyyy-mm-dd',
             clearBtn: true,
             language: 'zh-CN',
@@ -14,83 +15,57 @@ angular.module('ecommApp')
             autoclose: true
         });
 
-        $scope.selectedSupplierProduct = {};
-
-        $scope.totalPagesList = [];
-        $scope.pageSize = 20;
-        $scope.defaultQuery = {};
-        $scope.query = angular.copy($scope.defaultQuery);
-        $scope.suppliers = [];
-        $scope.creators = [];
-        $scope.supplierProducts = [];
-
-        /* 查询采购单分页数据所需查询参数 */
-        function getQueryParamJSON() {
-            return {
-                page: 0,
-                size: $scope.pageSize,
-                sort: ['createTime,desc'],
-                queryProductBarcode: $scope.query.queryProductBarcode ? $scope.query.queryProductBarcode : null,
-                querySupplierProductCode: $scope.query.querySupplierProductCode ? $scope.query.querySupplierProductCode : null,
-                querySupplierProductName: $scope.query.querySupplierProductName ? $scope.query.querySupplierProductName : null,
-                querySupplierId: $scope.query.querySupplier ? $scope.query.querySupplier.id : null,
-                queryCreatorId: $scope.query.queryCreator ? $scope.query.queryCreator.id : null,
-                queryCreateTimeStart: $scope.query.queryCreateTimeStart ? $scope.query.queryCreateTimeStart : null,
-                queryCreateTimeEnd: $scope.query.queryCreateTimeEnd ? $scope.query.queryCreateTimeEnd : null,
-                queryLastUpdateStart: $scope.query.queryLastUpdateStart ? $scope.query.queryLastUpdateStart : null,
-                queryLastUpdateEnd: $scope.query.queryLastUpdateEnd ? $scope.query.queryLastUpdateEnd : null
-            };
-        }
-
         Supplier.getAll({ // 导入所有供应商
             enabled: true,
             sort: ['name']
         }).then(function(suppliers) {
             $scope.suppliers = suppliers;
-        }).then(function() { // 导入所有用户
-            return User.getAll({
-                enabled: true,
-                sort: ['username']
-            }).then(function(creators) {
-                $scope.creators = creators;
-            });
-        }).then(function() {
-            supplierProductService.get(getQueryParamJSON(), function(page) {
-                console.log('page:');
-                console.log(page);
-                $scope.page = page;
-                $scope.totalPagesList = Utils.setTotalPagesList(page);
-            });
         });
 
-        $scope.search = function() {
-            console.clear();
-            console.log('search:');
-            console.log($scope.query);
-            supplierProductService.get(getQueryParamJSON(), function(page) {
-                console.log('page:');
-                console.log(page);
+        User.getAll({ // 导入所有用户
+            enabled: true,
+            sort: ['username']
+        }).then(function(creators) {
+            $scope.creators = creators;
+        });
+
+        $scope.searchData = function(query) {
+
+            supplierProductService.get({
+                page: query.page,
+                size: query.size,
+                sort: query.sort,
+                // query parameters
+                queryProductBarcode: query.supplierProduct.supplierProductBarcode,
+                querySupplierProductCode: query.supplierProduct.supplierProductCode,
+                querySupplierProductName: query.supplierProduct.supplierProductName,
+                querySupplierId: query.supplierProduct.id,
+                queryCreatorId: query.supplierProduct.creatorId,
+                queryCreateTimeStart: query.supplierProduct.createTimeStart,
+                queryCreateTimeEnd: query.supplierProduct.createTimeEnd,
+                queryLastUpdateStart: query.supplierProduct.lastUpdateStart,
+                queryLastUpdateEnd: query.supplierProduct.lastUpdateEnd
+
+            }, function(page) {
                 $scope.page = page;
-                $scope.totalPagesList = Utils.setTotalPagesList(page);
                 $scope.isCheckedAll = false;
             });
+
+        };
+
+        $scope.search = function(query) {
+            query.page = 0;
+            $scope.searchData(query);
         };
 
         $scope.reset = function() {
-            console.clear();
-            console.log('reset:');
-            $scope.query = angular.copy($scope.defaultQuery);
-            console.log($scope.query);
-            supplierProductService.get(getQueryParamJSON(), function(page) {
-                console.log('page:');
-                console.log(page);
-                $scope.page = page;
-                $scope.totalPagesList = Utils.setTotalPagesList(page);
-                $scope.isCheckedAll = false;
-            });
+            $scope.query = angular.copy(supplierProductService.getDefaultQuery());
+            $scope.searchData($scope.query);
         };
 
+        $scope.searchData($scope.query);
 
+        // 
         $scope.isCheckedAll = false;
         $scope.batchManipulationValue = 'batchManipulation';
 
@@ -100,7 +75,7 @@ angular.module('ecommApp')
             }
         };
 
-        ///* 批量操作 */
+        // 批量操作
         $scope.batchManipulation = function() {
             var supplierProducts = $scope.page.content;
             supplierProductService.selectedSupplierProducts.length = 0;
@@ -119,7 +94,6 @@ angular.module('ecommApp')
             } else {
                 toastr.error('请选择一到多个供应商产品来继续！');
             }
-
             $scope.batchManipulationValue = 'batchManipulation';
         };
 

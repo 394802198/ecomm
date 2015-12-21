@@ -71,8 +71,8 @@ public class SupplierProduct implements Serializable {
 	@Column(name = "last_update", nullable = false)
 	private Date lastUpdate;
 
-	@Column(name = "product_place")
-	private String productPlace;
+	@Column(name = "memo")
+	private String memo;
 
 	/*
 	 * Related Properties
@@ -355,12 +355,12 @@ public class SupplierProduct implements Serializable {
 		this.checkUnique = checkUnique;
 	}
 
-	public String getProductPlace() {
-		return productPlace;
+	public String getMemo() {
+		return memo;
 	}
 
-	public void setProductPlace(String productPlace) {
-		this.productPlace = productPlace;
+	public void setMemo(String memo) {
+		this.memo = memo;
 	}
 
 }
