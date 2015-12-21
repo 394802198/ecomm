@@ -4,6 +4,15 @@ angular.module('ecommApp')
 
     var supplierProduct = $resource('/api/supplierproducts/:id', {}, {});
 
+    supplierProduct.getDefaultQuery = function() {
+        return {
+            page: 0,
+            size: 20,
+            sort: ['createTime,desc'],
+            supplierProduct: {}
+        };
+    };
+
     supplierProduct.getAll = function(params) {
         return $http.get('/api/supplierproducts/get/all', {
             params: params
@@ -51,4 +60,5 @@ angular.module('ecommApp')
     };
 
     return supplierProduct;
+
 }]);
