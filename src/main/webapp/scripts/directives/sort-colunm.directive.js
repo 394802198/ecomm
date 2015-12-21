@@ -1,11 +1,11 @@
-angular.module('seedApp')
+angular.module('ecommApp')
 
-.directive('coSortColumn', ['$compile', function($compile) {
+.directive('coSortColumn', [function() {
 
     return {
         name: 'coSortColumn',
         restrict: 'A',
-        compile: function(tElement, tAttrs, transcludeFn) {
+        compile: function(tElement) {
 
             var colQueryName = $(tElement).attr('col-query-name');
             var colName = $(tElement).attr('col-name');
@@ -18,7 +18,7 @@ angular.module('seedApp')
 
             $(tElement).append(html);
 
-            return function linking(scope, elm, attrs, ctrl, transcludeFn) {
+            return function linking(scope) {
 
                 scope.toggleSort = function(col) {
                     scope.query.orderby = {};

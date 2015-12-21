@@ -10,8 +10,8 @@
         </div>
         <div class="panel-body">
             <h4 class="text-success">
-            <strong>供应商产品详情</strong>
-        </h4>
+                <strong>供应商产品详情</strong>
+            </h4>
         </div>
         <hr style="margin:0">
         <div class="panel-body">
@@ -20,7 +20,7 @@
                     <label class="control-label col-md-2">供应商 <span class="text-danger">*</span></label>
                     <div class="col-md-4">
                         <ui-select ng-model="supplierProduct.supplier">
-                            <ui-select-match placeholder="(必选)" name="aaaaaaa">>{{$select.selected.name}}</ui-select-match>
+                            <ui-select-match placeholder="(必选)">{{$select.selected.name}}</ui-select-match>
                             <ui-select-choices repeat="supplier in suppliers | filter: $select.search">
                                 <div ng-bind-html="supplier.name | highlight: $select.search"></div>
                             </ui-select-choices>
@@ -29,54 +29,40 @@
                 </div>
                 <div class="form-group">
                     <label class="control-label col-md-2">产品 </label>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" name="productId" ng-model="supplierProduct.productId" placeholder="(选填，输入商品名称或Sku)" ng-minlength="1" ng-maxlength="50" uib-typeahead="product as product.name + '(' + product.sku + ')' for product in getProduct($viewValue)" typeahead-loading="loadingLocations" typeahead-no-results="noResults" typeahead-wait-ms="350"/>
+                    <div class="col-md-10">
+                        <input type="text" class="form-control" name="productId" ng-model="supplierProduct.product" placeholder="(选填，输入商品名称或SKU)" ng-minlength="1" ng-maxlength="50" uib-typeahead="product as product.name + '(' + product.sku + ')' for product in getProduct($viewValue)" typeahead-loading="loadingLocations" typeahead-no-results="noResults" typeahead-wait-ms="350" />
+                        <i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
+                        <div ng-show="noResults">
+                            <i class="glyphicon glyphicon-remove"></i> No Results Found
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="control-label col-md-2">supplierProductCode </label>
+                    <label class="control-label col-md-2">供应商产品名称 <span class="text-danger">*</span></label>
                     <div class="col-md-4">
-                        <input type="text" class="form-control" name="supplierProductCode" ng-model="supplierProduct.supplierProductCode" placeholder="(选填)" ng-minlength="1" ng-maxlength="50" />
+                        <input type="text" class="form-control" name="supplierProductName" ng-model="supplierProduct.supplierProductName" placeholder="(必填)" required ng-minlength="1" ng-maxlength="50" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="control-label col-md-2">supplierProductBarcode </label>
+                    <label class="control-label col-md-2">供应商产品编号 <span class="text-danger">*</span></label>
                     <div class="col-md-4">
-                        <input type="text" class="form-control" name="supplierProductBarcode" ng-model="supplierProduct.supplierProductBarcode" placeholder="(选填)" ng-minlength="1" ng-maxlength="50" />
+                        <input type="text" class="form-control" name="supplierProductCode" ng-model="supplierProduct.supplierProductCode" placeholder="(必填)" required ng-minlength="1" ng-maxlength="50" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="control-label col-md-2">supplierProductName </label>
+                    <label class="control-label col-md-2">供应商产品条码 <span class="text-danger">*</span></label>
                     <div class="col-md-4">
-                        <input type="text" class="form-control" name="supplierProductName" ng-model="supplierProduct.supplierProductName" placeholder="(选填)" ng-minlength="1" ng-maxlength="50" />
+                        <input type="text" class="form-control" name="supplierProductBarcode" ng-model="supplierProduct.supplierProductBarcode" placeholder="(必填)" required ng-minlength="1" ng-maxlength="50" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="control-label col-md-2">defaultPurchasePrice </label>
+                    <label class="control-label col-md-2">默认采购价格 </label>
                     <div class="col-md-4">
-                        <input type="text" class="form-control" name="defaultPurchasePrice" ng-model="supplierProduct.defaultPurchasePrice" placeholder="(选填)" ng-minlength="1" ng-maxlength="50" />
+                        <input type="number" class="form-control" name="defaultPurchasePrice" ng-model="supplierProduct.defaultPurchasePrice" placeholder="(选填)" ng-minlength="1" ng-maxlength="50" ng-blur="rebuildPriceNumeric(supplierProduct, 'defaultPurchasePrice')"/>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="control-label col-md-2">createTime </label>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" name="createTime" ng-model="supplierProduct.createTime" placeholder="(选填)" ng-minlength="1" ng-maxlength="50" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">lastUpdate </label>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" name="lastUpdate" ng-model="supplierProduct.lastUpdate" placeholder="(选填)" ng-minlength="1" ng-maxlength="50" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">creatorId <span class="text-danger">*</span></label>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" name="creatorId" ng-model="supplierProduct.creatorId" placeholder="(必填)" required ng-minlength="1" ng-maxlength="50" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">productPlace </label>
+                    <label class="control-label col-md-2">商品在超市的放置位置 </label>
                     <div class="col-md-4">
                         <input type="text" class="form-control" name="productPlace" ng-model="supplierProduct.productPlace" placeholder="(选填)" ng-minlength="1" ng-maxlength="50" />
                     </div>

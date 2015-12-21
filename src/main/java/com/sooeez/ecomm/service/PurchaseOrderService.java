@@ -92,6 +92,7 @@ public class PurchaseOrderService
 
 			for( PurchaseOrderItem item : purchaseOrder.getItems() )
 			{
+				System.out.println(item.toString());
 				if( item.getSupplierProduct() != null && item.getSupplierProduct().getSupplierProductCode() != null )
 				{
 					/* 1. 获得供应商产品编码信息 */

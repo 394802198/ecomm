@@ -236,10 +236,11 @@
                 <tr class="text-center" style="font-weight:bold; background:#c8c8c8;">
                     <td width="50%">图片</td>
                     <td width="20%">条码</td>
-                    <td width="20">名称</td>
-                    <td width="10%">采购数量</td>
+                    <td width="15">名称</td>
+                    <td width="7%">采购数量</td>
+                    <td width="8%">货位</td>
                 </tr>
-                <tr ng-repeat="item in purchaseOrder.items" class="text-center">
+                <tr ng-repeat="item in purchaseOrder.items | orderBy: 'memo'" class="text-center">
                     <td>
                         <img src="{{ item.supplierProduct.product.thumbnailUrl }}" style="max-width:394px;" />
                     </td>
@@ -251,6 +252,9 @@
                     </td>
                     <td>
                         {{ item.purchaseQty }}
+                    </td>
+                    <td>
+                        {{ item.memo }}
                     </td>
                 </tr>
             </table>

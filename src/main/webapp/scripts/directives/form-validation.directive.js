@@ -1,4 +1,4 @@
-angular.module('seedApp')
+angular.module('ecommApp')
 
 .directive('coFormValidation', ['$timeout', function($timeout) {
 
@@ -6,7 +6,7 @@ angular.module('seedApp')
         name: 'coFormValidation',
         require: 'form',
         restrict: 'A',
-        compile: function(tElement, tAttrs, transcludeFn) {
+        compile: function(tElement, tAttrs) {
 
             var formName = $(tElement).attr('name');
 
