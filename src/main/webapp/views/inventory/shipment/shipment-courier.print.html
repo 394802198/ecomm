@@ -20,16 +20,22 @@
     }
 
     tr[size="FTD"] {
+        width:100%;
+    }
+    tr[size="FTD"] > td {
         background:url( 'images/courier_template/FTD_Final.png' );
         /*background:url( 'http://www.xiaohuilang.com/service/template/wof/2015/01/201579pn1334352oo.jpg' );*/
         background-size: 100%;
         background-repeat:no-repeat;
-        width: 27cm;
-        height: 17.5cm;
+        /*width: 27cm;*/
+        width:1020px;
+        /*height: 17.5cm;*/
+        height:660px;
         display: block;
         margin: 0 auto;
         margin-bottom: 0.5cm;
         box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+        position:relative;
     }
     @media print {
         body, tr[size="FTD"] {
@@ -126,7 +132,7 @@
 <table class="print-table" ng-show="page">
     <tbody>
     <tr size="FTD" ng-repeat="shipment in page.content">
-        <td style="width:23cm; position:relative;">
+        <td>
 
             <!-- 收寄日期 -->
             <span class="posting_date">
