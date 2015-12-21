@@ -14,12 +14,43 @@
     width: 100%;
 }
 
+/*breadcrumb style
+==================================================================*/
+.breadcrumb {
+    /*margin-bottom: 0;*/
+}
+
+/*cart-up, cart-down
+==================================================================*/
+.cart-down {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 2px;
+    vertical-align: middle;
+    border-top: 4px dashed;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+}
+
+.cart-up {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 2px;
+    vertical-align: middle;
+    border-bottom: 4px dashed;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+}
 
 /*pagination style
 ==================================================================*/
 
 .page-list .pagination {
     float: right;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .page-list .pagination span {
@@ -36,9 +67,13 @@
     background: none;
 }
 
+.page-list .pagination>li>a {
+    line-height: 1.1;
+}
+
 .page-list .page-total {
     float: right;
-    margin: 25px 20px;
+    margin: 0 20px;
 }
 
 .page-list .page-total form,
@@ -59,10 +94,8 @@
     width: 50px;
 }
 
-
 /*product style
 ==================================================================*/
-
 #breadcrumb-li:before {
     padding: 0 5px;
     color: #ccc;
@@ -84,7 +117,6 @@
 .popover-content {
     padding: 0;
 }
-
 
 /*jquery.file.upload
 ==================================================================*/
@@ -151,6 +183,10 @@ form[name="mcForm"] input,
 form[name="mcAddForm"] input {
     font-size: 10px;
     padding-right: 2px !important;
+}
+
+.help-block {
+    margin-bottom: 0;
 }
 
 
