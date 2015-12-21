@@ -5,7 +5,7 @@ angular.module('ecommApp')
 
         /* Activate Date Picker */
         $('input[ng-model="query.queryCreateTimeStart"], input[ng-model="query.queryCreateTimeEnd"], ' +
-          'input[ng-model="query.queryLastUpdateStart"], input[ng-model="query.queryLastUpdateEnd"]').datepicker({
+            'input[ng-model="query.queryLastUpdateStart"], input[ng-model="query.queryLastUpdateEnd"]').datepicker({
             format: 'yyyy-mm-dd',
             clearBtn: true,
             language: 'zh-CN',
@@ -25,8 +25,7 @@ angular.module('ecommApp')
         $scope.supplierProducts = [];
 
         /* 查询采购单分页数据所需查询参数 */
-        function getQueryParamJSON()
-        {
+        function getQueryParamJSON() {
             return {
                 page: 0,
                 size: $scope.pageSize,
@@ -46,11 +45,9 @@ angular.module('ecommApp')
         Supplier.getAll({ // 导入所有供应商
             enabled: true,
             sort: ['name']
-        }).then(function(suppliers)
-        {
+        }).then(function(suppliers) {
             $scope.suppliers = suppliers;
-        }).then(function()
-        { // 导入所有用户
+        }).then(function() { // 导入所有用户
             return User.getAll({
                 enabled: true,
                 sort: ['username']
@@ -58,7 +55,7 @@ angular.module('ecommApp')
                 $scope.creators = creators;
             });
         }).then(function() {
-            supplierProductService.get( getQueryParamJSON(), function(page) {
+            supplierProductService.get(getQueryParamJSON(), function(page) {
                 console.log('page:');
                 console.log(page);
                 $scope.page = page;
@@ -70,7 +67,7 @@ angular.module('ecommApp')
             console.clear();
             console.log('search:');
             console.log($scope.query);
-            supplierProductService.get( getQueryParamJSON(), function(page) {
+            supplierProductService.get(getQueryParamJSON(), function(page) {
                 console.log('page:');
                 console.log(page);
                 $scope.page = page;
@@ -84,7 +81,7 @@ angular.module('ecommApp')
             console.log('reset:');
             $scope.query = angular.copy($scope.defaultQuery);
             console.log($scope.query);
-            supplierProductService.get( getQueryParamJSON(), function(page) {
+            supplierProductService.get(getQueryParamJSON(), function(page) {
                 console.log('page:');
                 console.log(page);
                 $scope.page = page;
@@ -97,40 +94,29 @@ angular.module('ecommApp')
         $scope.isCheckedAll = false;
         $scope.batchManipulationValue = 'batchManipulation';
 
-        $scope.checkAllSupplierProducts = function()
-        {
-            for( var supplierProduct in $scope.page.content )
-            {
-                $scope.page.content[ supplierProduct ].isSelected = $scope.isCheckedAll;
+        $scope.checkAllSupplierProducts = function() {
+            for (var supplierProduct in $scope.page.content) {
+                $scope.page.content[supplierProduct].isSelected = $scope.isCheckedAll;
             }
         };
 
         ///* 批量操作 */
-        $scope.batchManipulation = function()
-        {
+        $scope.batchManipulation = function() {
             var supplierProducts = $scope.page.content;
             supplierProductService.selectedSupplierProducts.length = 0;
-            $.each(supplierProducts, function()
-            {
+            $.each(supplierProducts, function() {
                 var supplierProduct = this;
-                if ( supplierProduct.isSelected )
-                {
-                    supplierProductService.selectedSupplierProducts.push( angular.copy( supplierProduct ) );
+                if (supplierProduct.isSelected) {
+                    supplierProductService.selectedSupplierProducts.push(angular.copy(supplierProduct));
                 }
             });
-            if ( supplierProductService.selectedSupplierProducts.length > 0 )
-            {
-                if($scope.batchManipulationValue === 'supplierProductExport')
-                {
+            if (supplierProductService.selectedSupplierProducts.length > 0) {
+                if ($scope.batchManipulationValue === 'supplierProductExport') {
                     toastr.info('供应商产品导出！');
-                }
-                else if($scope.batchManipulationValue === 'supplierProductPrint')
-                {
+                } else if ($scope.batchManipulationValue === 'supplierProductPrint') {
                     toastr.info('供应商产品打印！');
                 }
-            }
-            else
-            {
+            } else {
                 toastr.error('请选择一到多个供应商产品来继续！');
             }
 

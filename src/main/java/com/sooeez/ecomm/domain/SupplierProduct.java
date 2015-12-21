@@ -33,31 +33,31 @@ public class SupplierProduct implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	//	#供应商编号
+	// #供应商编号
 	@Column(name = "supplier_id", nullable = false, insertable = false, updatable = false)
 	private Long supplierId;
 
-	//	#产品编号
+	// #产品编号
 	@Column(name = "product_id", insertable = false, updatable = false)
 	private Long productId;
 
-	//	#创建者编号
+	// #创建者编号
 	@Column(name = "creator_id", nullable = false, insertable = false, updatable = false)
 	private Long creatorId;
 
-	//	#供应商产品编码
+	// #供应商产品编码
 	@Column(name = "supplier_product_code")
-	private String  supplierProductCode;
+	private String supplierProductCode;
 
-	//	#条码
+	// #条码
 	@Column(name = "supplier_product_barcode")
-	private String  supplierProductBarcode;
+	private String supplierProductBarcode;
 
-	//	#供应商产品名称
+	// #供应商产品名称
 	@Column(name = "supplier_product_name")
-	private String  supplierProductName;
+	private String supplierProductName;
 
-	//	#默认采购单价
+	// #默认采购单价
 	@Column(name = "default_purchase_price")
 	private BigDecimal defaultPurchasePrice;
 
@@ -70,6 +70,9 @@ public class SupplierProduct implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "last_update", nullable = false)
 	private Date lastUpdate;
+
+	@Column(name = "product_place")
+	private String productPlace;
 
 	/*
 	 * Related Properties
@@ -96,7 +99,7 @@ public class SupplierProduct implements Serializable {
 
 	@Transient
 	private Long querySupplierId;
-	
+
 	@Transient
 	private Long queryCreatorId;
 
@@ -105,13 +108,13 @@ public class SupplierProduct implements Serializable {
 
 	@Transient
 	private String queryProductBarcode;
-	
+
 	@Transient
 	private String querySupplierProductCode;
-	
+
 	@Transient
 	private String querySupplierProductName;
-	
+
 	/* 供应商产品创建起始日期 */
 	@Transient
 	private String queryCreateTimeStart;
@@ -119,7 +122,7 @@ public class SupplierProduct implements Serializable {
 	/* 供应商产品创建结束日期 */
 	@Transient
 	private String queryCreateTimeEnd;
-	
+
 	/* 供应商产品最后更新起始日期 */
 	@Transient
 	private String queryLastUpdateStart;
@@ -131,23 +134,18 @@ public class SupplierProduct implements Serializable {
 	/* 采购单里，采购详情得模糊查询 */
 	@Transient
 	private String queryPurchaseOrderItemFuzzySearchParam;
-	
-	
-	
+
 	/*
 	 * 采购单：采购［供应商新品］时，临时用到的毫秒，匹配［供应商产品］和［采购单详情］是否关联
 	 */
 	@Transient
 	private Long currentTimeMillis;
 
-
 	// 检查唯一
 	@Transient
 	private Boolean checkUnique;
-	
 
 	//
-
 
 	public Long getId() {
 		return id;
@@ -357,5 +355,12 @@ public class SupplierProduct implements Serializable {
 		this.checkUnique = checkUnique;
 	}
 
+	public String getProductPlace() {
+		return productPlace;
+	}
+
+	public void setProductPlace(String productPlace) {
+		this.productPlace = productPlace;
+	}
 
 }
