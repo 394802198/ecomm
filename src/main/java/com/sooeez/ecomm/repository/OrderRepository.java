@@ -8,10 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sooeez.ecomm.domain.Order;
 
-public interface OrderRepository extends JpaRepository< Order, Long >, JpaSpecificationExecutor< Order >
-{
-	@Query( "UPDATE Order SET qtyTotalItemShipped = ?1 WHERE id = ?2" )
+public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
+	
+	@Query("UPDATE Order SET qtyTotalItemShipped = ?1 WHERE id = ?2")
 	@Modifying
 	@Transactional
-	void updateQtyTotalItemShippedById( Integer qtyTotalItemShipped, Long id );
+	void updateQtyTotalItemShippedById(Integer qtyTotalItemShipped, Long id);
+	
+	Long countByExternalId(Long externalId);
+
 }

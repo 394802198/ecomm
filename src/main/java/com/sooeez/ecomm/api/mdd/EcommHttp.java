@@ -58,7 +58,7 @@ public class EcommHttp
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpGet httpget = new HttpGet( finalUrlBuilder.toString() );
 		CloseableHttpResponse response = httpclient.execute( httpget );
-
+		
 		String json = EntityUtils.toString( response.getEntity(), "UTF-8" );
 
 		JSONParser parser = new JSONParser();
