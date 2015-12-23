@@ -1,5 +1,7 @@
 package com.sooeez.ecomm.controller;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sooeez.ecomm.domain.Product;
@@ -43,10 +46,15 @@ public class SupplierProductController
 		return supplierProductService.getSupplierProduct( id );
 	}
 
-	@RequestMapping( value = "/supplierproducts/by_sku_and_supplier_id/{sku}/{supplierId}" )
+	@RequestMapping( value = "/supplierproducts/by_sku_and_supplier_id" )
 	public SupplierProduct getSupplierProductByProductSkuAndSupplierId(
-		@PathVariable( "sku" ) String sku, @PathVariable( "supplierId" ) Long supplierId)
+		@RequestParam( "sku" ) String sku, @RequestParam( "supplierId" ) Long supplierId)
+			throws UnsupportedEncodingException
 	{
+		/*
+		 * URL 解码，避免字符串里的特殊字符被编码，导致数据库查询时匹配不上
+		 */
+		sku = URLDecoder.decode( sku, "UTF-8" );
 		return supplierProductService.getSupplierProductByProductSkuAndSupplierId( sku, supplierId );
 	}
 
@@ -148,10 +156,11 @@ public class SupplierProductController
 		supplierProductService.deleteSupplierProduct( id );
 		return new ResponseEntity< >( HttpStatus.OK );
 	}
-	
-	@RequestMapping(value = "/supplier-products/save/one-key", method = RequestMethod.POST)
-	public Product oneKeySaveProduct(@RequestBody SupplierProduct supplierProduct) {
-		return this.supplierProductService.oneKeySaveProduct(supplierProduct);
+
+	@RequestMapping( value = "/supplier-products/save/one-key", method = RequestMethod.POST )
+	public Product oneKeySaveProduct( @RequestBody SupplierProduct supplierProduct )
+	{
+		return this.supplierProductService.oneKeySaveProduct( supplierProduct );
 	}
 
 }
