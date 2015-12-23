@@ -31,7 +31,7 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
         {
             for( var currencyIndex in $scope.currencies )
             {
-                if( $scope.currencies[ currencyIndex].id === 100 )
+                if( $scope.currencies[ currencyIndex ].id === 100 )
                 {
                     $scope.purchaseOrder.currency = $scope.currencies[ currencyIndex ];
                 }
@@ -126,7 +126,6 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
         /* 如果验证全部通过 */
         if( isQualified )
         {
-
             refreshField(purchaseOrder);
 
             purchaseOrder.creator = {
@@ -219,7 +218,7 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
 
                 for( var itemIndex in purchaseOrder.items )
                 {
-                    purchaseOrder.items[ itemIndex].estimatePurchaseUnitPrice = Number( Math.floor( purchaseOrder.items[ itemIndex].estimatePurchaseUnitPrice ) ).toFixed( 2 );
+                    purchaseOrder.items[ itemIndex ].estimatePurchaseUnitPrice = Number( Math.floor( purchaseOrder.items[ itemIndex ].estimatePurchaseUnitPrice ) ).toFixed( 2 );
                 }
 
                 $scope.purchaseOrder = purchaseOrder;
@@ -313,7 +312,7 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
         var finalPurchasedProducts = [];
         for( var purchasedProductsStrIndex in purchasedProductsStr )
         {
-            var purchasedProductStr = purchasedProductsStr[ purchasedProductsStrIndex].split(',');
+            var purchasedProductStr = purchasedProductsStr[ purchasedProductsStrIndex ].split(',');
             var purchasedProduct = {
                 sku             :    purchasedProductStr[ 0 ],
                 purchaseQty     :    purchasedProductStr[ 1 ]
@@ -345,13 +344,18 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
                     var This = this;
                     if( This.sku )
                     {
-                        supplierProductService.getByProductSkuAndSupplierId( this.sku, $scope.purchaseOrder.supplier.id).then(function( supplierProduct )
+                        var params =
+                        {
+                            sku         :    this.sku,
+                            supplierId  :    $scope.purchaseOrder.supplier.id
+                        };
+                        supplierProductService.getByProductSkuAndSupplierId( params ).then(function( supplierProduct )
                         {
                             var item =
                             {
                                 supplierProduct : supplierProduct,
                                 purchaseQty : This.purchaseQty,
-                                estimatePurchaseUnitPrice : Number( supplierProduct.defaultPurchasePrice).toFixed( 2 )
+                                estimatePurchaseUnitPrice : Number( supplierProduct.defaultPurchasePrice ).toFixed( 2 )
                             };
                             $scope.purchaseOrder.items.push( item );
                         });
@@ -389,8 +393,8 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
 
             for( var supplierProductIndex in $scope.supplierProducts )
             {
-                $scope.supplierProducts[supplierProductIndex].purchaseQty = 1;
-                $scope.supplierProducts[supplierProductIndex].defaultPurchasePrice = Number( $scope.supplierProducts[supplierProductIndex].defaultPurchasePrice ).toFixed( 2 );
+                $scope.supplierProducts[ supplierProductIndex ].purchaseQty = 1;
+                $scope.supplierProducts[ supplierProductIndex ].defaultPurchasePrice = Number( $scope.supplierProducts[ supplierProductIndex ].defaultPurchasePrice ).toFixed( 2 );
             }
         });
     };
@@ -407,8 +411,8 @@ var PurchaseOrderOperatorController = function($scope, $rootScope, $state, $stat
             {
                 for( var itemIndex in items )
                 {
-                    var purchaseQty = Number( items[itemIndex].purchaseQty );
-                    var estimatePurchaseUnitPrice = Number( items[itemIndex].estimatePurchaseUnitPrice );
+                    var purchaseQty = Number( items[ itemIndex ].purchaseQty );
+                    var estimatePurchaseUnitPrice = Number( items[ itemIndex ].estimatePurchaseUnitPrice );
                     totalPurchasedQty += purchaseQty;
                     totalEstimatePurchasedAmount += ( purchaseQty * estimatePurchaseUnitPrice );
                 }
