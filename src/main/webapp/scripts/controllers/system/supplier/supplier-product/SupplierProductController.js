@@ -3,7 +3,8 @@ angular.module('ecommApp')
 .controller('SupplierProductController', ['$scope', '$rootScope', 'toastr', 'Supplier', 'User', 'Utils', 'supplierProductService',
     function($scope, $rootScope, toastr, Supplier, User, Utils, supplierProductService) {
 
-        $scope.query = angular.copy(supplierProductService.getDefaultQuery());
+        // $scope.query = angular.copy(supplierProductService.getDefaultQuery());
+        // $scope.query.supplierProduct.creator = null;
 
         /* Activate Date Picker */
         $('.input-daterange>input').datepicker({
@@ -39,8 +40,8 @@ angular.module('ecommApp')
                 queryProductBarcode: query.supplierProduct.supplierProductBarcode,
                 querySupplierProductCode: query.supplierProduct.supplierProductCode,
                 querySupplierProductName: query.supplierProduct.supplierProductName,
-                querySupplierId: query.supplierProduct.id,
-                queryCreatorId: query.supplierProduct.creatorId,
+                querySupplierId: query.supplierProduct.supplier ? query.supplierProduct.supplier.id : null,
+                queryCreatorId: query.supplierProduct.creator ? query.supplierProduct.creator.id: null,
                 queryCreateTimeStart: query.supplierProduct.createTimeStart,
                 queryCreateTimeEnd: query.supplierProduct.createTimeEnd,
                 queryLastUpdateStart: query.supplierProduct.lastUpdateStart,
@@ -60,10 +61,11 @@ angular.module('ecommApp')
 
         $scope.reset = function() {
             $scope.query = angular.copy(supplierProductService.getDefaultQuery());
+            $scope.query.supplierProduct.creator = null;
             $scope.searchData($scope.query);
         };
 
-        $scope.searchData($scope.query);
+        $scope.reset();
 
         // 
         $scope.isCheckedAll = false;

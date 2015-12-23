@@ -17,7 +17,8 @@ angular.module('ecommApp')
             lastUpdate: null,
             creatorId: null,
             productPlace: null,
-            creator: $rootScope.user()
+            creator: $rootScope.user(),
+            supplier: null
         };
     };
 

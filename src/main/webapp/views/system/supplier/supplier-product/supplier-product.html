@@ -25,7 +25,7 @@
                                 <input type="text" class="form-control" placeholder="供应商产品名称" ng-model="query.supplierProduct.supplierProductName">
                             </td>
                             <td width="7%">
-                                <ui-select ng-model="query.supplierProduct.id">
+                                <ui-select ng-model="query.supplierProduct.supplier">
                                     <ui-select-match placeholder="供应商">{{$select.selected.name}}</ui-select-match>
                                     <ui-select-choices repeat="supplier in suppliers | filter: $select.search">
                                         <div ng-bind-html="supplier.name | highlight: $select.search"></div>
@@ -33,7 +33,7 @@
                                 </ui-select>
                             </td>
                             <td width="6%">
-                                <ui-select ng-model="query.supplierProduct.creatorId">
+                                <ui-select ng-model="query.supplierProduct.creator">
                                     <ui-select-match placeholder="创建人">{{$select.selected.name}}</ui-select-match>
                                     <ui-select-choices repeat="creator in creators | filter: $select.search">
                                         <div ng-bind-html="creator.username | highlight: $select.search"></div>

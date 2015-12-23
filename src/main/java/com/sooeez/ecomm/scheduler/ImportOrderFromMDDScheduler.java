@@ -24,7 +24,7 @@ public class ImportOrderFromMDDScheduler
 	// }
 
 	// 每 3 分钟执行一次
-	@Scheduled( cron = "0 */3 * * * * " )
+//	@Scheduled( cron = "0 */3 * * * * " )
 	private void importOrderFromMDDByCronEveryFiveMinutes() throws Exception
 	{
 		this.importOrderFromMDD.importOrderFromMDD();
